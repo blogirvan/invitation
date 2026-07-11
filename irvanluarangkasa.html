@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Irvan Efendi | Penjelajah Kode</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: { extend: { fontFamily: { sans: ['Inter', 'sans-serif'], mono: ['Space Mono', 'monospace'], }, colors: { space: { 900: '#050510', 800: '#0a0a20', accent: '#4F46E5', glow: '#00F0FF' } } } }
+        }
+    </script>
+    <style>
+        body { margin: 0; overflow-x: hidden; background-color: #050510; color: white; font-family: 'Inter', sans-serif; }
+        #webgl-container { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -1; pointer-events: none; }
+        .scroll-section { min-height: 100vh; padding: 120px 0; display: flex; align-items: center; position: relative; z-index: 10; opacity: 0; transform: translateY(50px); transition: all 1s ease-out; }
+        .scroll-section.visible { opacity: 1; transform: translateY(0); }
+        .glass-panel { background: rgba(10, 10, 32, 0.6); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5); border-radius: 16px; position: relative;}
+        .hologram-card { background: rgba(10, 15, 30, 0.4); border: 1.5px solid rgba(0, 240, 255, 0.4); border-radius: 12px; box-shadow: 0 0 15px rgba(0, 240, 255, 0.15), inset 0 0 10px rgba(0, 240, 255, 0.05); backdrop-filter: blur(8px); padding: 20px 24px; position: relative; transition: all 0.3s ease; width: 100%; max-width: 380px; }
+        .hologram-card:hover { box-shadow: 0 0 25px rgba(0, 240, 255, 0.3), inset 0 0 15px rgba(0, 240, 255, 0.1); border-color: rgba(0, 240, 255, 0.8); transform: translateY(-5px); }
+        .hologram-badge { width: 42px; height: 42px; border-radius: 50%; border: 2px solid #00F0FF; display: flex; align-items: center; justify-content: center; font-family: 'Space Mono', monospace; font-weight: bold; font-size: 1rem; color: white; box-shadow: 0 0 10px rgba(0, 240, 255, 0.5); }
+        .btn-glow { animation: pulse-glow 3s infinite; }
+        @keyframes pulse-glow { 0%, 100% { box-shadow: 0 0 15px rgba(0, 240, 255, 0.2); } 50% { box-shadow: 0 0 25px rgba(0, 240, 255, 0.5); } }
+        ::-webkit-scrollbar { width: 8px; } ::-webkit-scrollbar-track { background: #050510; } ::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; } ::-webkit-scrollbar-thumb:hover { background: #555; }
+    </style>
+</head>
+<body class="antialiased selection:bg-space-glow selection:text-space-900">
+
+    <div id="webgl-container"></div>
+
+    <div class="fixed inset-0 pointer-events-none z-50 flex flex-col justify-between p-4 md:p-10">
+        <header class="flex justify-between items-center pointer-events-auto">
+            <div class="text-2xl font-bold tracking-tighter">IE<span class="text-space-glow">.</span></div>
+            <nav class="hidden md:flex space-x-8 text-xs font-mono tracking-widest text-gray-400">
+                <a href="#about" class="hover:text-white transition-colors">01. TENTANG</a>
+                <a href="#career" class="hover:text-white transition-colors">02. KARIER</a>
+		<a href="#work" class="hover:text-white transition-colors">03. KERJA</a>
+                <a href="#projects" class="hover:text-white transition-colors">04. PROYEK</a>
+                <a href="#contact" class="hover:text-white transition-colors">05. KONTAK</a>
+            </nav>
+            <div class="flex items-center gap-3">
+                <a href="resume.pdf" target="_blank" rel="noopener noreferrer" class="px-4 md:px-5 py-2 border border-gray-600 rounded-full text-[10px] md:text-xs font-mono hover:bg-white hover:text-black transition-all">RÉSUMÉ ↗</a>
+            </div>
+        </header>
+
+        <div class="flex justify-between items-end pb-2 md:pb-4">
+            <div class="flex flex-row md:flex-col space-x-5 md:space-x-0 md:space-y-4 pointer-events-auto">
+     <a href="https://github.com/blogirvan" target="_blank" class="text-gray-400 hover:text-white transition-colors"><i class="fab fa-github text-xl"></i></a>
+     <a href="https://facebook.com/irvan.cyberArt" target="_blank" class="text-gray-400 hover:text-white transition-colors"><i class="fab fa-facebook text-xl"></i></a>
+     <a href="https://x.com/irvanefendy_" target="_blank" class="text-gray-400 hover:text-white transition-colors"><i class="fab fa-twitter text-xl"></i></a>
+     <a href="https://instagram.com/irvanefendy_" class="text-gray-400 hover:text-white transition-colors"><i class="fab fa-instagram text-xl"></i></a>
+            </div>
+            <div class="hidden md:flex flex-col items-end text-[10px] font-mono text-gray-500 text-right space-y-1">
+                <div class="flex items-center gap-2"><div class="h-[1px] w-8 bg-gray-700"></div><span id="alt-meter">ALT: 0.00 KM</span></div>
+                <div>VEL: 24,000 M/S</div>
+                <div>SEC: <span class="text-space-glow">// SKILLS</span></div>
+		<div>Created with ❤️ <span class="text-space-glow">by Irvan Efendi</span></div>
+            </div>
+        </div>
+    </div>
+
+    <main id="content-container" class="relative z-10 w-full max-w-7xl mx-auto px-4 md:px-16">
+        
+        <section id="hero" class="scroll-section justify-center text-center">
+            <div class="max-w-3xl pointer-events-auto">
+                <p class="font-mono text-space-glow text-xs md:text-sm mb-4 tracking-widest uppercase">// SYSTEMS CHECK > EXPLORASI DIMULAI //</p>
+                <h1 class="text-4xl md:text-7xl font-bold mb-6 tracking-tight leading-tight"><span class="text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-500">Irvan Efendi</span></h1>
+                <p class="text-gray-400 text-base md:text-xl mb-10 font-light">Software Engineer • Web 3D Explorer</p>
+                <div class="animate-bounce text-gray-500 font-mono text-[10px] md:text-xs tracking-widest mt-10">SCROLL UNTUK EKSPLORASI ↓</div>
+            </div>
+        </section>
+
+        <section id="about" class="scroll-section justify-center md:justify-start">
+            <div class="glass-panel p-6 md:p-10 w-full max-w-lg pointer-events-auto">
+                <div class="font-mono text-space-glow text-xs mb-3">01 // TENTANG</div>
+                <h2 class="text-2xl md:text-4xl font-bold mb-4">Full stack.</h2>
+                <p class="text-gray-300 mb-4 text-xs md:text-sm leading-relaxed">
+                    Saya membangun sistem yang sederhana, cepat, dan mudah dipelihara. Mengurangi dependensi dan merancang antarmuka langsung untuk skala nyata.
+                </p>
+            </div>
+        </section>
+
+<section id="career" class="scroll-section relative flex-col justify-center items-center py-32 md:py-48 min-h-[120vh]">
+            <div class="font-mono text-space-glow text-xs mb-10 w-full text-center md:text-left pointer-events-auto max-w-4xl">02 // KARIER SAYA</div>
+            
+            <div class="w-full max-w-5xl flex flex-col gap-16 md:gap-24 pointer-events-auto relative z-20">
+                <div class="hologram-card self-start md:ml-12">
+                    <div class="flex justify-between items-center mb-3">
+                        <h3 class="text-2xl font-bold tracking-wide">SDN Tempeh Lor 02</h3>
+                        <div class="hologram-badge">1</div>
+                    </div>
+                    <p class="text-space-glow text-xs font-mono tracking-widest uppercase">2000 - 2007</p>
+                </div>
+
+                <div class="hologram-card self-end md:mr-12">
+                    <div class="flex justify-between items-center mb-3">
+                        <h3 class="text-2xl font-bold tracking-wide">SMP Negeri 1 Tempeh</h3>
+                        <div class="hologram-badge">02</div>
+                    </div>
+                    <p class="text-space-glow text-[10px] md:text-xs font-mono tracking-widest uppercase">2007 - 2010</p>
+                </div>
+
+                <div class="hologram-card self-start md:ml-32">
+                    <div class="flex justify-between items-center mb-3">
+                        <h3 class="text-2xl font-bold tracking-wide">SMK Negeri Pasirian</h3>
+                        <div class="hologram-badge">03</div>
+                    </div>
+                    <p class="text-space-glow text-[10px] md:text-xs font-mono tracking-widest uppercase">2010 - 2013</p>
+                </div>
+            </div>
+        </section>
+
+<section id="work" class="scroll-section relative flex-col justify-center items-center py-32 md:py-48 min-h-[120vh]">
+            <div class="font-mono text-space-glow text-xs mb-10 w-full text-center md:text-left pointer-events-auto max-w-4xl">03 // WORK EXPERIENCE</div>
+            
+            <div class="w-full max-w-5xl flex flex-col gap-16 md:gap-24 pointer-events-auto relative z-20">
+                <div class="hologram-card self-start md:ml-12">
+                    <div class="flex justify-between items-center mb-3">
+                        <h2 class="text-2xl font-bold tracking-wide">Belajar Internet <br><span class="text-space-glow">Google Search</span></h2>
+                        <div class="hologram-badge">01</div>
+                    </div>
+                    <p class="text-space-glow text-xs font-mono tracking-widest uppercase">JAN 2011 - SEKARANG • HYBRID</p>
+                </div>
+
+                <div class="hologram-card self-end md:mr-12">
+                    <div class="flex justify-between items-center mb-3">
+                        <h2 class="text-2xl font-bold tracking-wide">Mencari Rupiah <br><span class="text-space-glow">Blogger • Fb • Twitter</span></h2>
+                        <div class="hologram-badge">02</div>
+                    </div>
+                    <p class="text-space-glow text-[10px] md:text-xs font-mono tracking-widest uppercase">AGU 2012 - DES 2015 • REMOTE</p>
+                </div>
+
+                <div class="hologram-card self-start md:ml-32">
+                    <div class="flex justify-between items-center mb-3">
+                        <h2 class="text-2xl font-bold tracking-wide">Bekerja <br><span class="text-space-glow">JNE Express Surabaya</span></h2>
+                        <div class="hologram-badge">03</div>
+                    </div>
+                    <p class="text-space-glow text-[10px] md:text-xs font-mono tracking-widest uppercase">JUN 2014 - SEKARANG • ADMIN</p>
+                </div>
+            </div>
+        </section>
+
+
+        <section id="projects" class="scroll-section relative flex-col justify-center items-center py-32 md:py-48 min-h-[120vh]">
+            <div class="font-mono text-space-glow text-xs mb-10 w-full text-center md:text-left pointer-events-auto max-w-4xl">04 // SKILL MODULES ONLINE</div>
+            
+            <div class="w-full max-w-5xl flex flex-col gap-16 md:gap-24 pointer-events-auto relative z-20">
+                <div class="hologram-card self-start md:ml-12">
+                    <div class="flex justify-between items-center mb-3">
+                        <h3 class="text-2xl font-bold tracking-wide">Web 3D</h3>
+                        <div class="hologram-badge">01</div>
+                    </div>
+                    <p class="text-space-glow text-xs font-mono tracking-widest uppercase">THREE.JS • HTML5 • CSS</p>
+                </div>
+
+                <div class="hologram-card self-end md:mr-12">
+                    <div class="flex justify-between items-center mb-3">
+                        <h3 class="text-2xl font-bold tracking-wide">AI & Automation</h3>
+                        <div class="hologram-badge">02</div>
+                    </div>
+                    <p class="text-space-glow text-[10px] md:text-xs font-mono tracking-widest uppercase">GPTS • TENSORFLOW • BOT API • PhP</p>
+                </div>
+
+                <div class="hologram-card self-start md:ml-32">
+                    <div class="flex justify-between items-center mb-3">
+                        <h3 class="text-2xl font-bold tracking-wide">Template Design</h3>
+                        <div class="hologram-badge">03</div>
+                    </div>
+                    <p class="text-space-glow text-[10px] md:text-xs font-mono tracking-widest uppercase">CSS • JAVASCRIPT • TAILWIND • XML</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="contact" class="scroll-section justify-center text-center pb-20">
+            <div class="glass-panel p-8 md:p-16 w-full max-w-xl pointer-events-auto btn-glow">
+                <div class="font-mono text-yellow-400 text-xs mb-3">05 // KOMUNIKASI</div>
+                <h2 class="text-3xl md:text-5xl font-bold mb-6">Hubungi Saya</h2>
+                <a href="mailto:irvanefendi@icloud.com" class="inline-block bg-white text-black text-sm md:text-base font-semibold py-3 md:py-4 px-6 md:px-8 rounded-full hover:bg-gray-200 transition-colors transform hover:scale-105 duration-200">
+                    Transmisi Pesan <i class="fas fa-arrow-right ml-2"></i>
+                </a>
+            </div>
+        </section>
+        <div class="h-32"></div>
+    </main>
+
+    <!-- Three.js CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    
+    <script>
+        const sections = document.querySelectorAll('.scroll-section');
+        const observerOptions = { root: null, threshold: 0.15, rootMargin: "0px" };
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => { if (entry.isIntersecting) entry.target.classList.add('visible'); });
+        }, observerOptions);
+        sections.forEach(section => observer.observe(section));
+
+        // ==========================================
+        // SCENE SETUP
+        // ==========================================
+        const canvasContainer = document.getElementById('webgl-container');
+        const scene = new THREE.Scene();
+        scene.fog = new THREE.FogExp2(0x050510, 0.0015); // Kabut sedikit dikurangi agar matahari terlihat jelas
+
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 2000);
+        const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        canvasContainer.appendChild(renderer.domElement);
+
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.3);
+        scene.add(ambientLight);
+        const dirLight = new THREE.DirectionalLight(0xffffff, 1.2);
+        dirLight.position.set(50, 50, 50);
+        scene.add(dirLight);
+
+        // Bintang
+        const starGeo = new THREE.BufferGeometry();
+        const starCount = 3000;
+        const posArray = new Float32Array(starCount * 3);
+        for(let i = 0; i < starCount * 3; i++) {
+            posArray[i] = (Math.random() - 0.5) * 1500;
+        }
+        starGeo.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
+        const stars = new THREE.Points(starGeo, new THREE.PointsMaterial({ size: 1.2, color: 0xffffff, transparent: true, opacity: 0.8 }));
+        scene.add(stars);
+
+        // ==========================================
+        // 3D PATH / JALUR ROKET (CatmullRomCurve3)
+        // ==========================================
+        // Ini adalah jalur yang akan dilewati roket layaknya rel roller coaster
+        const pathCurve = new THREE.CatmullRomCurve3([
+            new THREE.Vector3(0, 0, 10),       // Titik Awal (Hero)
+            new THREE.Vector3(-10, -5, -60),   // Mendekati Bumi (About)
+            new THREE.Vector3(30, 5, -160),    // Menghindar/Berbelok ke Kanan mengitari Saturnus
+            new THREE.Vector3(10, 0, -250),    // Kembali ke tengah setelah Saturnus
+            new THREE.Vector3(-20, -10, -350), // Menukik turun menuju Matahari (Contact)
+            new THREE.Vector3(0, 0, -450)      // Titik Akhir dekat Matahari
+        ]);
+
+        // ==========================================
+        // PLANETS & ENVIRONMENT
+        // ==========================================
+        const textureLoader = new THREE.TextureLoader();
+        
+        // 1. BUMI (Di kiri jalur)
+        const earthSystem = new THREE.Group();
+        earthSystem.position.set(-25, -5, -80);
+        scene.add(earthSystem);
+
+        const earthTex = textureLoader.load('https://cdn.jsdelivr.net/gh/mrdoob/three.js@master/examples/textures/planets/earth_atmos_2048.jpg');
+        const earth = new THREE.Mesh(new THREE.SphereGeometry(15, 64, 64), new THREE.MeshStandardMaterial({ map: earthTex, roughness: 0.5, metalness: 0.1 }));
+        earthSystem.add(earth);
+
+        const moonTex = textureLoader.load('https://cdn.jsdelivr.net/gh/mrdoob/three.js@master/examples/textures/planets/moon_1024.jpg');
+        const moon = new THREE.Mesh(new THREE.SphereGeometry(3, 32, 32), new THREE.MeshStandardMaterial({ map: moonTex, roughness: 0.9 }));
+        moon.position.set(-25, 5, 10);
+        earthSystem.add(moon);
+
+        // 2. SATURNUS (Di tengah jalur, roket memutarinya)
+        const saturnGroup = new THREE.Group();
+        saturnGroup.position.set(5, 0, -180); // Berada tepat di rute
+        scene.add(saturnGroup);
+
+        const bpGeo = new THREE.SphereGeometry(20, 64, 64);
+        const bpMat = new THREE.MeshStandardMaterial({ color: 0x1144ff, emissive: 0x001133, roughness: 0.3, metalness: 0.2 });
+        const saturnPlanet = new THREE.Mesh(bpGeo, bpMat);
+        saturnGroup.add(saturnPlanet);
+
+        const bpRing = new THREE.Mesh(new THREE.RingGeometry(25, 45, 64), new THREE.MeshStandardMaterial({ color: 0x4488ff, side: THREE.DoubleSide, transparent: true, opacity: 0.5 }));
+        bpRing.rotation.x = Math.PI / 2 + 0.2;
+        saturnGroup.add(bpRing);
+
+        // 3. MATAHARI BERSINAR TERANG (Di ujung jalur)
+        const sunGroup = new THREE.Group();
+        sunGroup.position.set(0, 0, -550);
+        scene.add(sunGroup);
+
+        const sunTex = textureLoader.load('https://cdn.jsdelivr.net/gh/mrdoob/three.js@master/examples/textures/planets/sun.jpg');
+        const sunMat = new THREE.MeshBasicMaterial({ color: 0xffffff, map: sunTex }); // Basic material ignores lighting, stays bright
+        const sun = new THREE.Mesh(new THREE.SphereGeometry(40, 64, 64), sunMat);
+        sunGroup.add(sun);
+        
+        // Cahaya Matahari Inti
+        const sunLight = new THREE.PointLight(0xffddaa, 4, 600); // Intensitas sangat tinggi
+        sunGroup.add(sunLight);
+        
+        // Efek Glow / Aura (Outer sphere with transparency)
+        const glowMat = new THREE.MeshBasicMaterial({ color: 0xffaa00, transparent: true, opacity: 0.2, side: THREE.BackSide, blending: THREE.AdditiveBlending });
+        const glowSphere = new THREE.Mesh(new THREE.SphereGeometry(45, 32, 32), glowMat);
+        sunGroup.add(glowSphere);
+
+        // Asteroid tersebar di sekitar path
+        const asteroids = [];
+        const astGeo = new THREE.DodecahedronGeometry(1, 1);
+        const astMat = new THREE.MeshStandardMaterial({ color: 0x555555, roughness: 0.9 });
+        for(let i=0; i < 200; i++) {
+            const mesh = new THREE.Mesh(astGeo, astMat);
+            mesh.position.set((Math.random() - 0.5) * 200, (Math.random() - 0.5) * 100, -(Math.random() * 500));
+            mesh.scale.setScalar(Math.random() * 2 + 0.5);
+            scene.add(mesh);
+            asteroids.push(mesh);
+        }
+
+        // ==========================================
+        // ROKET & WADAH KONTROL (CONTAINER)
+        // ==========================================
+        // Kita bungkus roket ke dalam Container agar Container mengikuti kurva path, 
+        // sedangkan Roket di dalamnya bergerak bermanuver (banking).
+        const rocketContainer = new THREE.Group();
+        scene.add(rocketContainer);
+
+        const createRocket = () => {
+            const rocketGroup = new THREE.Group();
+            const bodyMat = new THREE.MeshStandardMaterial({ color: 0xffffff, metalness: 0.4, roughness: 0.5 });
+            const redMat = new THREE.MeshStandardMaterial({ color: 0x00F0FF, metalness: 0.8, roughness: 0.2 }); 
+            
+            const mainBody = new THREE.Mesh(new THREE.CylinderGeometry(0.6, 0.6, 4, 32), bodyMat);
+            rocketGroup.add(mainBody);
+
+            const nose = new THREE.Mesh(new THREE.ConeGeometry(0.6, 1.5, 32), redMat);
+            nose.position.y = 2.75;
+            rocketGroup.add(nose);
+
+            const finGeo = new THREE.Shape();
+            finGeo.moveTo(0, 0); finGeo.lineTo(0.8, -0.2); finGeo.lineTo(0.8, -1.5); finGeo.lineTo(0, -1); finGeo.closePath();
+            const finGeometry = new THREE.ExtrudeGeometry(finGeo, { steps: 1, depth: 0.05, bevelEnabled: true, bevelThickness: 0.02, bevelSize: 0.02, bevelSegments: 2 });
+            for (let i = 0; i < 4; i++) {
+                const fin = new THREE.Mesh(finGeometry, redMat);
+                fin.position.y = -1.5; fin.rotation.y = (Math.PI / 2) * i; fin.translateX(0.55); fin.rotation.z = Math.PI/2;
+                rocketGroup.add(fin);
+            }
+
+            // Api Mesin Utama
+            const flameGeo = new THREE.ConeGeometry(0.35, 1.8, 16);
+            const flameMat = new THREE.MeshBasicMaterial({ color: 0x00ffff, transparent: true, opacity: 0.8 });
+            const mainFlame = new THREE.Mesh(flameGeo, flameMat);
+            mainFlame.position.y = -3.4; mainFlame.rotation.x = Math.PI;
+            rocketGroup.add(mainFlame);
+
+            const flameLight = new THREE.PointLight(0x00ffff, 2, 15);
+            flameLight.position.y = -3;
+            rocketGroup.add(flameLight);
+
+            // Karena default CylinderGeometry berdiri tegak (Y), kita harus merubahnya 
+            // menunjuk ke arah Z negatif agar sinkron dengan Camera dan Path lookAt
+            rocketGroup.rotation.x = -Math.PI / 2;
+            rocketGroup.scale.set(0.6, 0.6, 0.6);
+            
+            return { group: rocketGroup, flame: mainFlame };
+        };
+        const rocketData = createRocket();
+        const rocket = rocketData.group;
+        const rocketFlame = rocketData.flame;
+        
+        // Masukkan roket ke wadah (container)
+        rocketContainer.add(rocket);
+
+        // ==========================================
+        // SISTEM PARTIKEL ASAP & API ROKET
+        // ==========================================
+        const particles = [];
+        const particleGeo = new THREE.DodecahedronGeometry(0.2, 0);
+
+        function spawnParticle() {
+            // 50% Asap Putih/Abu, 50% Api Cyan/Biru
+            const isSmoke = Math.random() > 0.5;
+            const color = isSmoke ? 0xaaaaaa : (Math.random() > 0.5 ? 0x00ffff : 0x0055ff);
+            
+            const pMat = new THREE.MeshBasicMaterial({ color: color, transparent: true, opacity: isSmoke ? 0.3 : 0.8 });
+            const particle = new THREE.Mesh(particleGeo, pMat);
+            
+            // Lokasi spawn: Titik ekor roket berdasarkan posisi dunia (World Position)
+            const tailPos = new THREE.Vector3(0, -3.5, 0); 
+            tailPos.applyMatrix4(rocket.matrixWorld);
+            
+            particle.position.copy(tailPos);
+            // Acak letak awal (spread)
+            particle.position.x += (Math.random() - 0.5) * 0.4;
+            particle.position.y += (Math.random() - 0.5) * 0.4;
+            particle.position.z += (Math.random() - 0.5) * 0.4;
+            
+            // Arah semburan (melawan arah gerak)
+            const velocity = new THREE.Vector3(
+                (Math.random() - 0.5) * 0.05,
+                (Math.random() - 0.5) * 0.05,
+                (Math.random() * 0.1) + 0.1 // Z positif = ke belakang
+            );
+            
+            scene.add(particle);
+            particles.push({ mesh: particle, velocity: velocity, life: 1.0, isSmoke: isSmoke });
+        }
+
+        function updateParticles() {
+            for (let i = particles.length - 1; i >= 0; i--) {
+                const p = particles[i];
+                p.life -= 0.03; 
+                if (p.life <= 0) {
+                    scene.remove(p.mesh); p.mesh.material.dispose(); particles.splice(i, 1);
+                } else {
+                    p.mesh.position.add(p.velocity);
+                    const scale = p.isSmoke ? 1 + (1 - p.life) * 3 : p.life * 1.5; 
+                    p.mesh.scale.setScalar(scale);
+                    p.mesh.material.opacity = p.life * (p.isSmoke ? 0.3 : 0.8);
+                }
+            }
+        }
+
+        // ==========================================
+        // ANIMATION & SCROLL LOGIC
+        // ==========================================
+        let targetScroll = 0;
+        let currentScroll = 0;
+        
+        document.body.onscroll = () => {
+            const h = document.documentElement, b = document.body, st = 'scrollTop', sh = 'scrollHeight';
+            // Scroll Percent: 0.0 (atas) hingga 1.0 (bawah)
+            targetScroll = (h[st] || b[st]) / ((h[sh] || b[sh]) - h.clientHeight);
+            // Batasi persentase maksimal agar tidak kehabisan path (0.0 sampai 0.99)
+            targetScroll = Math.min(targetScroll, 0.99);
+        };
+
+        const clock = new THREE.Clock();
+
+        function animate() {
+            requestAnimationFrame(animate);
+            const elapsedTime = clock.getElapsedTime();
+
+            // Smooth Scroll LERP (Linear Interpolation)
+            currentScroll += (targetScroll - currentScroll) * 0.05;
+
+            // 1. UPDATE POSISI ROKET CONTAINER DI SEPANJANG JALUR (PATH)
+            // Mengambil titik koordinat (X,Y,Z) di atas kurva berdasarkan persentase scroll
+            const pathPoint = pathCurve.getPointAt(currentScroll);
+            rocketContainer.position.copy(pathPoint);
+
+            // Mengarahkan moncong container mengikuti lengkungan kurva
+            const tangent = pathCurve.getTangentAt(currentScroll);
+            const lookAtTarget = pathPoint.clone().add(tangent);
+            rocketContainer.lookAt(lookAtTarget);
+
+            // 2. EFEK MANUVER (SWERVING & BANKING) PADA ROKET
+            // Animasi roket yang bergerak organik di dalam containernya
+            const swerveX = Math.sin(elapsedTime * 1.2) * 1.5;
+            const swerveY = Math.cos(elapsedTime * 0.8) * 1.0;
+            
+            rocket.position.x = swerveX;
+            rocket.position.y = swerveY;
+            
+            // Banking: miringkan roket saat berbelok (Roll & Pitch)
+            // Karena roket sudah diputar -Math.PI/2 di sumbu X, rotasi Z adalah roll
+            rocket.rotation.z = -swerveX * 0.15; 
+            rocket.rotation.y = swerveX * 0.05;
+
+            // Animasi jet flame
+            const flameScale = 1 + Math.random() * 0.3;
+            rocketFlame.scale.setScalar(flameScale);
+
+            // Munculkan partikel asap di ekor
+            spawnParticle();
+            if(Math.random() > 0.5) spawnParticle();
+            updateParticles();
+
+            // 3. KAMERA MENGIKUTI ROKET
+            // Kamera diletakkan di belakang dan sedikit di atas roket container
+            const camOffset = new THREE.Vector3(0, 3, 12); // (X, Y, Z jarak dari belakang)
+            camOffset.applyMatrix4(rocketContainer.matrixWorld); // Konversi ke posisi dunia nyata
+            
+            // Kamera perlahan mengejar posisi yang ditentukan (Smooth Follow)
+            camera.position.lerp(camOffset, 0.1);
+            
+            // Jika berada di akhir scroll, kamera menatap ke atas (Matahari), jika tidak, kamera fokus ke roket
+            if (currentScroll > 0.9) {
+                camera.lookAt(sunGroup.position);
+            } else {
+                camera.lookAt(rocketContainer.position);
+            }
+
+            // 4. ROTASI PLANET
+            earth.rotation.y += 0.001; 
+            earthSystem.rotation.y += 0.002; 
+            saturnGroup.rotation.y -= 0.001;
+            sunGroup.rotation.y += 0.001;
+            glowSphere.scale.setScalar(1 + Math.sin(elapsedTime * 2) * 0.02); // Aura matahari berdenyut
+
+            asteroids.forEach(ast => { ast.rotation.x += 0.002; ast.rotation.y += 0.002; });
+
+            // UPDATE UI METERAN
+            const altMeter = document.getElementById('alt-meter');
+            if(altMeter) altMeter.innerText = `ALT: ${Math.abs(rocketContainer.position.z).toFixed(2)} KM`;
+
+            renderer.render(scene, camera);
+        }
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        animate();
+    </script>
+</body>
+</html>
