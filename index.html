@@ -357,7 +357,7 @@
             <h1 class="font-playfair display-3 mb-4 gold-text-gradient">Irvan & Ajeng</h1>
             <div class="my-4">
                 <p class="mb-1 text-muted small">Kepada Yth.</p>
-                <h3 class="font-playfair text-white mt-2">Tamu Undangan</h3>
+                <h3 id="guestNameDisplay" class="font-playfair text-white mt-2">Tamu Undangan</h3>
             </div>
             <button id="open-invitation" class="btn-gold-premium mt-3">
                 <i class="fas fa-envelope-open-text me-2"></i> Buka Undangan
@@ -576,7 +576,8 @@
                     
                     <!-- Form RSVP Premium -->
                     <div class="col-lg-5 reveal">
-                        <div class="text-center mb-4">                            
+                        <div class="text-center mb-4">
+                            <p class="font-montserrat text-gold small mb-1" style="letter-spacing: 2px;">ATTENDANCE</p>
                             <h2 class="font-playfair gold-text-gradient">RSVP</h2>
                         </div>
                         <div class="glass-card shadow-lg" style="border-color: var(--gold-1);">
@@ -620,6 +621,7 @@
                     <!-- Buku Tamu (Wishes) Premium -->
                     <div class="col-lg-6 reveal">
                         <div class="text-center mb-4">
+                            <p class="font-montserrat text-gold small mb-1" style="letter-spacing: 2px;">GUESTBOOK</p>
                             <h2 class="font-playfair gold-text-gradient">Wishes & Prayers</h2>
                         </div>
                         <div class="glass-card shadow-lg">
@@ -707,6 +709,25 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         document.addEventListener("DOMContentLoaded", () => {
+            // --- FITUR NAMA TAMU OTOMATIS START ---
+            const urlParams = new URLSearchParams(window.location.search);
+            const guestName = urlParams.get('to') || urlParams.get('yth'); 
+            
+            if (guestName) {
+                // 1. Mengubah nama di halaman cover
+                const coverNameDisplay = document.getElementById('guestNameDisplay');
+                if (coverNameDisplay) {
+                    coverNameDisplay.innerText = guestName;
+                }
+                
+                // 2. Mengisi otomatis nama di form RSVP
+                const rsvpNameInput = document.getElementById('rsvpName');
+                if (rsvpNameInput) {
+                    rsvpNameInput.value = guestName;
+                }
+            }
+            // --- FITUR NAMA TAMU OTOMATIS END ---
+
             const openBtn = document.getElementById('open-invitation');
             const cover = document.getElementById('cover');
             const mainContent = document.getElementById('main-content');
@@ -714,6 +735,7 @@
             const musicIcon = document.getElementById('music-icon');
             let isPlaying = false;
 
+	// Buka Undangan
             openBtn.addEventListener('click', () => {
                 cover.classList.add('cover-up');
                 setTimeout(() => {
@@ -724,12 +746,14 @@
                 window.scrollTo(0, 0);
             });
 
+	// Musik Kontrol
             document.getElementById('music-btn').addEventListener('click', () => {
                 if (isPlaying) { bgMusic.pause(); musicIcon.classList.remove('spin-anim'); } 
                 else { bgMusic.play(); musicIcon.classList.add('spin-anim'); }
                 isPlaying = !isPlaying;
             });
-
+        
+	// Animasi Scroll Reveal
             function revealElements() {
                 const reveals = document.querySelectorAll('.reveal');
                 const windowHeight = window.innerHeight;
@@ -740,6 +764,7 @@
             }
             window.addEventListener('scroll', revealElements);
 
+        // Countdown Timer
             const targetDate = new Date("Dec 31, 2026 08:00:00").getTime();
             setInterval(() => {
                 const distance = targetDate - new Date().getTime();
@@ -752,7 +777,7 @@
                 `;
             }, 1000);
 
-      // RSVP Form Submit (Mewah tanpa alert pop-up)
+      	// RSVP Form Submit (Mewah tanpa alert pop-up)
             document.getElementById('rsvpForm').addEventListener('submit', (e) => { 
                 e.preventDefault(); 
                 const btn = document.getElementById('btnRsvpSubmit');
@@ -768,7 +793,7 @@
                 }, 3000);
             });
 
-            // Wishes Form Submit (Menambah kartu ucapan bergaya elegan)
+        // Wishes Form Submit (Menambah kartu ucapan bergaya elegan)
             document.getElementById('wishesForm').addEventListener('submit', (e) => {
                 e.preventDefault();
                 const name = document.getElementById('wishName').value;
@@ -790,7 +815,7 @@
                 const container = document.getElementById('wishesContainer');
                 container.insertBefore(newWish, container.firstChild);
                 
-                // Animasi Tombol
+         // Animasi Tombol
                 const btn = document.getElementById('btnWishSubmit');
                 const originalHtml = btn.innerHTML;
                 btn.innerHTML = '<i class="fas fa-check me-2"></i> Terkirim';
@@ -799,7 +824,7 @@
                 e.target.reset();
             });
 
-            // Gallery Setup
+         // Gallery Setup
             const images = document.querySelectorAll('.masonry img');
             const carouselInner = document.getElementById('carouselInner');
             images.forEach((img, index) => {
@@ -810,9 +835,9 @@
             });
         });
 
-                // Copy Text Elegan (Tanpa pop-up standard alert)
-        function copyText(btnElement, elementId) {
-            const textToCopy = document.getElementById(elementId).innerText;
+         // Copy Text Elegan (Tanpa pop-up standard alert)
+        	function copyText(btnElement, elementId) {
+            	const textToCopy = document.getElementById(elementId).innerText;
             
             // Clipboard API bisa gagal di iframe, jadi fallback command dicoba
             try {
