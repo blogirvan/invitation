@@ -42,7 +42,10 @@
                 <a href="#contact" class="hover:text-white transition-colors">05. KONTAK</a>
             </nav>
             <div class="flex items-center gap-3">
-                <a href="resume.pdf" target="_blank" rel="noopener noreferrer" class="px-4 md:px-5 py-2 border border-gray-600 rounded-full text-[10px] md:text-xs font-mono hover:bg-white hover:text-black transition-all">RÉSUMÉ ↗</a>
+<button id="sound-toggle" class="w-9 h-9 flex items-center justify-center rounded-full border border-gray-600 text-gray-400 hover:text-white hover:border-space-glow transition-all pointer-events-auto" title="Nyalakan/Matikan Suara">
+                    <i class="fas fa-volume-mute"></i>
+                </button>
+                <a href="http://irvan-efendi.blogspot.com" target="_blank" rel="noopener noreferrer" class="px-4 md:px-5 py-2 border border-gray-600 rounded-full text-[10px] md:text-xs font-mono hover:bg-white hover:text-black transition-all">RÉSUMÉ ↗</a>
             </div>
         </header>
 
@@ -80,6 +83,9 @@
                 <p class="text-gray-300 mb-4 text-xs md:text-sm leading-relaxed">
                     Saya membangun sistem yang sederhana, cepat, dan mudah dipelihara. Mengurangi dependensi dan merancang antarmuka langsung untuk skala nyata.
                 </p>
+<div class="border-t border-gray-700 pt-4 font-mono text-[10px] md:text-xs text-gray-400 space-y-2">
+                    <div><span class="text-space-glow">▶</span> Keahlian: CSS, JavaScript, HTML, PhP, Tailwind</div>
+                    <div><span class="text-space-glow">▶</span> Berbasis di Surabaya, East Java, ID</div>
             </div>
         </section>
 
@@ -142,6 +148,7 @@
                 </div>
             </div>
         </section>
+
 
         <section id="projects" class="scroll-section relative flex-col justify-center items-center py-32 md:py-48 min-h-[120vh]">
             <div class="font-mono text-space-glow text-xs mb-10 w-full text-center md:text-left pointer-events-auto max-w-4xl">04 // SKILL MODULES ONLINE</div>
@@ -251,13 +258,32 @@
         earthSystem.position.set(-25, -5, -80);
         scene.add(earthSystem);
 
+        // Pencahayaan khusus untuk Bumi & Bulan agar tidak pernah gelap gulita
+        const earthLight = new THREE.PointLight(0xffffff, 2, 200);
+        earthLight.position.set(30, 20, 20); 
+        earthSystem.add(earthLight);
+
+        // Tekstur Bumi & Awan (Efek Mewah)
         const earthTex = textureLoader.load('https://cdn.jsdelivr.net/gh/mrdoob/three.js@master/examples/textures/planets/earth_atmos_2048.jpg');
-        const earth = new THREE.Mesh(new THREE.SphereGeometry(15, 64, 64), new THREE.MeshStandardMaterial({ map: earthTex, roughness: 0.5, metalness: 0.1 }));
+        const earth = new THREE.Mesh(new THREE.SphereGeometry(15, 64, 64), new THREE.MeshStandardMaterial({ map: earthTex, roughness: 0.6, metalness: 0.1 }));
         earthSystem.add(earth);
 
+        // Lapisan Awan Terpisah
+        const cloudTex = textureLoader.load('https://cdn.jsdelivr.net/gh/mrdoob/three.js@master/examples/textures/planets/earth_clouds_1024.png');
+        const clouds = new THREE.Mesh(new THREE.SphereGeometry(15.2, 64, 64), new THREE.MeshStandardMaterial({ map: cloudTex, transparent: true, opacity: 0.6, blending: THREE.AdditiveBlending, depthWrite: false }));
+        earthSystem.add(clouds);
+
+        // Bulan dengan Bump Map (Tekstur Kawah Realistis 3D)
         const moonTex = textureLoader.load('https://cdn.jsdelivr.net/gh/mrdoob/three.js@master/examples/textures/planets/moon_1024.jpg');
-        const moon = new THREE.Mesh(new THREE.SphereGeometry(3, 32, 32), new THREE.MeshStandardMaterial({ map: moonTex, roughness: 0.9 }));
-        moon.position.set(-25, 5, 10);
+        const moon = new THREE.Mesh(new THREE.SphereGeometry(3, 64, 64), new THREE.MeshStandardMaterial({ 
+            map: moonTex, 
+            bumpMap: moonTex, // Menggunakan tekstur warna sebagai kedalaman kawah
+            bumpScale: 0.05,
+            roughness: 0.8,
+            metalness: 0.1,
+            emissive: 0x111111 // Sedikit pendaran agar detail kawah tetap terlihat di area bayangan
+        }));
+        moon.position.set(-28, 5, 12); // Posisinya sedikit disesuaikan
         earthSystem.add(moon);
 
         // 2. SATURNUS (Di tengah jalur, roket memutarinya)
@@ -279,19 +305,57 @@
         sunGroup.position.set(0, 0, -550);
         scene.add(sunGroup);
 
-        const sunTex = textureLoader.load('https://cdn.jsdelivr.net/gh/mrdoob/three.js@master/examples/textures/planets/sun.jpg');
-        const sunMat = new THREE.MeshBasicMaterial({ color: 0xffffff, map: sunTex }); // Basic material ignores lighting, stays bright
-        const sun = new THREE.Mesh(new THREE.SphereGeometry(40, 64, 64), sunMat);
+        // Membuat Tekstur Matahari secara Dinamis (Procedural Texture)
+        function createSunTexture() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 512;
+            canvas.height = 512;
+            const ctx = canvas.getContext('2d');
+            
+            // Warna dasar oranye
+            ctx.fillStyle = '#ff5500';
+            ctx.fillRect(0, 0, 512, 512);
+            
+            // Membuat efek bintik-bintik panas (Sunspots/Granulation)
+            for(let i = 0; i < 8000; i++) {
+                ctx.fillStyle = Math.random() > 0.5 ? '#ffaa00' : '#cc2200';
+                ctx.globalAlpha = Math.random() * 0.8;
+                ctx.beginPath();
+                ctx.arc(Math.random() * 512, Math.random() * 512, Math.random() * 3 + 1, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            
+            // Membuat area ledakan cahaya terang (Solar flares)
+            for(let i = 0; i < 40; i++) {
+                ctx.fillStyle = '#ffffff';
+                ctx.globalAlpha = 0.5;
+                ctx.beginPath();
+                ctx.arc(Math.random() * 512, Math.random() * 512, Math.random() * 40 + 10, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            
+            return new THREE.CanvasTexture(canvas);
+        }
+        
+        // Inti Matahari
+        const sunMat = new THREE.MeshBasicMaterial({ color: 0xffffff, map: createSunTexture() });
+        const sun = new THREE.Mesh(new THREE.SphereGeometry(38, 64, 64), sunMat);
         sunGroup.add(sun);
         
-        // Cahaya Matahari Inti
-        const sunLight = new THREE.PointLight(0xffddaa, 4, 600); // Intensitas sangat tinggi
+        // Cahaya Matahari Inti (Penyinaran untuk lingkungan)
+        const sunLight = new THREE.PointLight(0xffddaa, 5, 800);
         sunGroup.add(sunLight);
         
-        // Efek Glow / Aura (Outer sphere with transparency)
-        const glowMat = new THREE.MeshBasicMaterial({ color: 0xffaa00, transparent: true, opacity: 0.2, side: THREE.BackSide, blending: THREE.AdditiveBlending });
-        const glowSphere = new THREE.Mesh(new THREE.SphereGeometry(45, 32, 32), glowMat);
-        sunGroup.add(glowSphere);
+        // Efek Korona/Aura Berlapis agar Mewah (Additive Blending)
+        // Lapisan 1: Oranye Terang
+        const glowMat1 = new THREE.MeshBasicMaterial({ color: 0xff8800, transparent: true, opacity: 0.5, side: THREE.BackSide, blending: THREE.AdditiveBlending });
+        const glowSphere1 = new THREE.Mesh(new THREE.SphereGeometry(41, 64, 64), glowMat1);
+        sunGroup.add(glowSphere1);
+
+        // Lapisan 2: Merah Pudar (Glow Luar)
+        const glowMat2 = new THREE.MeshBasicMaterial({ color: 0xff3300, transparent: true, opacity: 0.25, side: THREE.BackSide, blending: THREE.AdditiveBlending });
+        const glowSphere2 = new THREE.Mesh(new THREE.SphereGeometry(48, 64, 64), glowMat2);
+        sunGroup.add(glowSphere2);
 
         // Asteroid tersebar di sekitar path
         const asteroids = [];
@@ -481,10 +545,15 @@
 
             // 4. ROTASI PLANET
             earth.rotation.y += 0.001; 
-            earthSystem.rotation.y += 0.002; 
+            clouds.rotation.y += 0.0015; // Awan bergerak sedikit lebih cepat dari Bumi
+            moon.rotation.y += 0.002;    // Rotasi bulan pada porosnya
+            earthSystem.rotation.y += 0.0015; // Kecepatan Orbit
             saturnGroup.rotation.y -= 0.001;
-            sunGroup.rotation.y += 0.001;
-            glowSphere.scale.setScalar(1 + Math.sin(elapsedTime * 2) * 0.02); // Aura matahari berdenyut
+            sunGroup.rotation.y += 0.001; // Rotasi Matahari
+            
+            // Aura matahari berdenyut (Pulse effect)
+            glowSphere1.scale.setScalar(1 + Math.sin(elapsedTime * 3) * 0.02);
+            glowSphere2.scale.setScalar(1 + Math.cos(elapsedTime * 2) * 0.04);
 
             asteroids.forEach(ast => { ast.rotation.x += 0.002; ast.rotation.y += 0.002; });
 
@@ -502,6 +571,33 @@
         });
 
         animate();
+
+// AUDIO & SOUND LOGIC
+        const soundToggle = document.getElementById('sound-toggle');
+        const toggleIcon = soundToggle.querySelector('i');
+        
+        const bgMusic = new Audio('/space-ambient.mp3');
+        bgMusic.loop = true;
+        bgMusic.volume = 0.35;
+
+        let isPlaying = false;
+
+        const toggleSound = () => {
+            if (isPlaying) {
+                bgMusic.pause();
+                toggleIcon.classList.remove('fa-volume-up', 'text-space-glow');
+                toggleIcon.classList.add('fa-volume-mute');
+                soundToggle.classList.remove('border-space-glow', 'shadow-[0_0_10px_#00F0FF]');
+            } else {
+                bgMusic.play().catch(e => console.warn("Browser memblokir pemutaran audio.", e));
+                toggleIcon.classList.remove('fa-volume-mute');
+                toggleIcon.classList.add('fa-volume-up', 'text-space-glow');
+                soundToggle.classList.add('border-space-glow', 'shadow-[0_0_10px_#00F0FF]');
+            }
+            isPlaying = !isPlaying;
+        };
+
+        soundToggle.addEventListener('click', toggleSound);
     </script>
 </body>
 </html>
