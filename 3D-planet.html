@@ -22,8 +22,11 @@
         .hologram-card { background: rgba(10, 15, 30, 0.4); border: 1.5px solid rgba(0, 240, 255, 0.4); border-radius: 12px; box-shadow: 0 0 15px rgba(0, 240, 255, 0.15), inset 0 0 10px rgba(0, 240, 255, 0.05); backdrop-filter: blur(8px); padding: 20px 24px; position: relative; transition: all 0.3s ease; width: 100%; max-width: 380px; }
         .hologram-card:hover { box-shadow: 0 0 25px rgba(0, 240, 255, 0.3), inset 0 0 15px rgba(0, 240, 255, 0.1); border-color: rgba(0, 240, 255, 0.8); transform: translateY(-5px); }
         .hologram-badge { width: 42px; height: 42px; border-radius: 50%; border: 2px solid #00F0FF; display: flex; align-items: center; justify-content: center; font-family: 'Space Mono', monospace; font-weight: bold; font-size: 1rem; color: white; box-shadow: 0 0 10px rgba(0, 240, 255, 0.5); }
+        
+        /* TAMBAHKAN KODE INI UNTUK ANIMASI KARTU */
         .reveal-element { opacity: 0; transform: translateY(50px); transition: all 0.8s ease-out; }
         .reveal-element.visible { opacity: 1; transform: translateY(0); }
+
         .btn-glow { animation: pulse-glow 3s infinite; }
         @keyframes pulse-glow { 0%, 100% { box-shadow: 0 0 15px rgba(0, 240, 255, 0.2); } 50% { box-shadow: 0 0 25px rgba(0, 240, 255, 0.5); } }
         ::-webkit-scrollbar { width: 8px; } ::-webkit-scrollbar-track { background: #050510; } ::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; } ::-webkit-scrollbar-thumb:hover { background: #555; }
@@ -184,8 +187,10 @@
     <!-- Three.js CDN -->
      <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script>
+        // ==========================================
+        // OBSERVER (Scroll Animations)
+        // ==========================================
         const sections = document.querySelectorAll('.scroll-section, .reveal-element');
-        
         const observerOptions = { root: null, threshold: 0.15, rootMargin: "0px" };
         const observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => { if (entry.isIntersecting) entry.target.classList.add('visible'); });
@@ -197,268 +202,345 @@
         // ==========================================
         const canvasContainer = document.getElementById('webgl-container');
         const scene = new THREE.Scene();
-        scene.fog = new THREE.FogExp2(0x050510, 0.0015); // Kabut sedikit dikurangi agar matahari terlihat jelas
+        // Fog yang dalam (hitam) seperti referensi Abhishek Badar
+        scene.fog = new THREE.FogExp2(0x050510, 0.0012); 
 
         const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 2000);
-        const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+        const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true, powerPreference: "high-performance" });
         renderer.setSize(window.innerWidth, window.innerHeight);
         renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        // Tone mapping untuk pencahayaan realistis (HDR feel)
+        renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        renderer.toneMappingExposure = 1.2;
         canvasContainer.appendChild(renderer.domElement);
 
-        const ambientLight = new THREE.AmbientLight(0xffffff, 0.3);
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.2);
         scene.add(ambientLight);
-        const dirLight = new THREE.DirectionalLight(0xffffff, 1.2);
-        dirLight.position.set(50, 50, 50);
+        // Cahaya utama dari sudut atas (mirip sun-light)
+        const dirLight = new THREE.DirectionalLight(0xffffff, 1.5);
+        dirLight.position.set(100, 100, 50);
         scene.add(dirLight);
 
-        // Bintang
+        // ==========================================
+        // BACKGROUND STARS & DUST
+        // ==========================================
         const starGeo = new THREE.BufferGeometry();
-        const starCount = 3000;
+        const starCount = 4000;
         const posArray = new Float32Array(starCount * 3);
-        for(let i = 0; i < starCount * 3; i++) {
-            posArray[i] = (Math.random() - 0.5) * 1500;
+        const colorArray = new Float32Array(starCount * 3);
+        
+        for(let i = 0; i < starCount * 3; i+=3) {
+            posArray[i] = (Math.random() - 0.5) * 2000;
+            posArray[i+1] = (Math.random() - 0.5) * 2000;
+            posArray[i+2] = (Math.random() - 0.5) * 2000;
+            
+            // Sedikit variasi warna bintang (putih, kebiruan, kekuningan)
+            const mixColor = Math.random();
+            colorArray[i] = mixColor > 0.8 ? 0.8 : 1; // R
+            colorArray[i+1] = mixColor > 0.8 ? 0.9 : 1; // G
+            colorArray[i+2] = mixColor < 0.2 ? 0.8 : 1; // B
         }
         starGeo.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
-        const stars = new THREE.Points(starGeo, new THREE.PointsMaterial({ size: 1.2, color: 0xffffff, transparent: true, opacity: 0.8 }));
+        starGeo.setAttribute('color', new THREE.BufferAttribute(colorArray, 3));
+        
+        const stars = new THREE.Points(starGeo, new THREE.PointsMaterial({ 
+            size: 1.0, 
+            vertexColors: true, 
+            transparent: true, 
+            opacity: 0.7 
+        }));
         scene.add(stars);
 
         // ==========================================
         // 3D PATH / JALUR ROKET (CatmullRomCurve3)
         // ==========================================
-        // Ini adalah jalur yang akan dilewati roket layaknya rel roller coaster
         const pathCurve = new THREE.CatmullRomCurve3([
             new THREE.Vector3(0, 0, 10),       // Titik Awal (Hero)
-            new THREE.Vector3(-10, -5, -60),   // Mendekati Bumi (About)
-            new THREE.Vector3(30, 5, -160),    // Menghindar/Berbelok ke Kanan mengitari Saturnus
-            new THREE.Vector3(10, 0, -250),    // Kembali ke tengah setelah Saturnus
-            new THREE.Vector3(-20, -10, -350), // Menukik turun menuju Matahari (Contact)
-            new THREE.Vector3(0, 0, -450)      // Titik Akhir dekat Matahari
+            new THREE.Vector3(-12, -2, -60),   // Mendekati Bumi (About)
+            new THREE.Vector3(25, 8, -160),    // Menghindar/Berbelok ke Kanan mengitari Saturnus (Projects)
+            new THREE.Vector3(5, 0, -280),     // Kembali ke tengah (Transisi)
+            new THREE.Vector3(-15, -15, -380), // Menukik turun
+            new THREE.Vector3(0, -5, -480)     // Titik Akhir dekat Matahari (Contact)
         ]);
 
         // ==========================================
-        // PLANETS & ENVIRONMENT
+        // PLANETS, MOON & SATELLITE (Abhishek Badar Style)
         // ==========================================
         const textureLoader = new THREE.TextureLoader();
         
-        // 1. BUMI (Di kiri jalur)
+        // 1. SISTEM BUMI (Kiri)
         const earthSystem = new THREE.Group();
-        earthSystem.position.set(-25, -5, -80);
+        earthSystem.position.set(-30, -5, -85);
         scene.add(earthSystem);
 
-        // Pencahayaan khusus untuk Bumi & Bulan agar tidak pernah gelap gulita
-        const earthLight = new THREE.PointLight(0xffffff, 2, 200);
-        earthLight.position.set(30, 20, 20); 
+        // Cahaya dramatis menyorot bumi
+        const earthLight = new THREE.PointLight(0xffffff, 2.5, 200);
+        earthLight.position.set(40, 20, 20); 
         earthSystem.add(earthLight);
 
-        // Tekstur Bumi & Awan (Efek Mewah)
+        // Bumi 
         const earthTex = textureLoader.load('https://cdn.jsdelivr.net/gh/mrdoob/three.js@master/examples/textures/planets/earth_atmos_2048.jpg');
-        const earth = new THREE.Mesh(new THREE.SphereGeometry(15, 64, 64), new THREE.MeshStandardMaterial({ map: earthTex, roughness: 0.6, metalness: 0.1 }));
+        const earthSpecular = textureLoader.load('https://cdn.jsdelivr.net/gh/mrdoob/three.js@master/examples/textures/planets/earth_specular_2048.jpg');
+        const earth = new THREE.Mesh(
+            new THREE.SphereGeometry(16, 64, 64), 
+            new THREE.MeshStandardMaterial({ 
+                map: earthTex, 
+                roughnessMap: earthSpecular, // Air memantulkan cahaya, tanah kasar
+                roughness: 0.8,
+                metalness: 0.1 
+            })
+        );
         earthSystem.add(earth);
 
-        // Lapisan Awan Terpisah
+        // Awan (Transparan & terpisah agar mengambang)
         const cloudTex = textureLoader.load('https://cdn.jsdelivr.net/gh/mrdoob/three.js@master/examples/textures/planets/earth_clouds_1024.png');
-        const clouds = new THREE.Mesh(new THREE.SphereGeometry(15.2, 64, 64), new THREE.MeshStandardMaterial({ map: cloudTex, transparent: true, opacity: 0.6, blending: THREE.AdditiveBlending, depthWrite: false }));
+        const clouds = new THREE.Mesh(
+            new THREE.SphereGeometry(16.3, 64, 64), 
+            new THREE.MeshStandardMaterial({ 
+                map: cloudTex, transparent: true, opacity: 0.5, depthWrite: false, side: THREE.DoubleSide
+            })
+        );
         earthSystem.add(clouds);
 
-        // Bulan dengan Bump Map (Tekstur Kawah Realistis 3D)
+        // Bulan dengan kawah realistis
         const moonTex = textureLoader.load('https://cdn.jsdelivr.net/gh/mrdoob/three.js@master/examples/textures/planets/moon_1024.jpg');
-        const moon = new THREE.Mesh(new THREE.SphereGeometry(3, 64, 64), new THREE.MeshStandardMaterial({ 
-            map: moonTex, 
-            bumpMap: moonTex, // Menggunakan tekstur warna sebagai kedalaman kawah
-            bumpScale: 0.05,
-            roughness: 0.8,
-            metalness: 0.1,
-            emissive: 0x111111 // Sedikit pendaran agar detail kawah tetap terlihat di area bayangan
-        }));
-        moon.position.set(-28, 5, 12); // Posisinya sedikit disesuaikan
+        const moon = new THREE.Mesh(
+            new THREE.SphereGeometry(3.5, 64, 64), 
+            new THREE.MeshStandardMaterial({ 
+                map: moonTex, bumpMap: moonTex, bumpScale: 0.02, roughness: 0.9, emissive: 0x111111 
+            })
+        );
+        moon.position.set(-32, 8, 15); 
         earthSystem.add(moon);
 
-        // 2. SATURNUS (Di tengah jalur, roket memutarinya)
+        // Satelit Buatan ala Badar (mengorbit bumi)
+        const satelliteGroup = new THREE.Group();
+        
+        // Badan
+        const satBody = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.3, 1.2, 16), new THREE.MeshStandardMaterial({ color: 0xdddddd, metalness: 0.8 }));
+        satelliteGroup.add(satBody);
+        
+        // Sayap Panel Surya (Kiri Kanan)
+        const panelMat = new THREE.MeshStandardMaterial({ color: 0x113355, metalness: 0.9, roughness: 0.2, emissive: 0x001122 });
+        const panelL = new THREE.Mesh(new THREE.BoxGeometry(3, 0.6, 0.05), panelMat);
+        panelL.position.x = -1.8;
+        const panelR = new THREE.Mesh(new THREE.BoxGeometry(3, 0.6, 0.05), panelMat);
+        panelR.position.x = 1.8;
+        satelliteGroup.add(panelL);
+        satelliteGroup.add(panelR);
+        
+        // Antena parabola kecil
+        const dish = new THREE.Mesh(new THREE.SphereGeometry(0.4, 16, 16, 0, Math.PI), new THREE.MeshStandardMaterial({ color: 0xaaaaaa, side: THREE.DoubleSide }));
+        dish.position.y = 0.8;
+        dish.rotation.x = Math.PI / 2;
+        satelliteGroup.add(dish);
+
+        satelliteGroup.position.set(22, -2, 0); // Jarak orbit
+        // Miringkan orbit satelit
+        const satOrbit = new THREE.Group();
+        satOrbit.rotation.z = Math.PI / 6;
+        satOrbit.rotation.x = Math.PI / 8;
+        satOrbit.add(satelliteGroup);
+        earthSystem.add(satOrbit);
+
+
+        // 2. PLANET BERCINCIN (Saturnus Biru/Ungu)
         const saturnGroup = new THREE.Group();
-        saturnGroup.position.set(5, 0, -180); // Berada tepat di rute
+        saturnGroup.position.set(8, -2, -180); 
         scene.add(saturnGroup);
 
-        const bpGeo = new THREE.SphereGeometry(20, 64, 64);
-        const bpMat = new THREE.MeshStandardMaterial({ color: 0x1144ff, emissive: 0x001133, roughness: 0.3, metalness: 0.2 });
-        const saturnPlanet = new THREE.Mesh(bpGeo, bpMat);
+        const bpMat = new THREE.MeshStandardMaterial({ 
+            color: 0x4f46e5, // Indigo Tailwind
+            emissive: 0x111133, 
+            roughness: 0.4, 
+            metalness: 0.3 
+        });
+        const saturnPlanet = new THREE.Mesh(new THREE.SphereGeometry(18, 64, 64), bpMat);
         saturnGroup.add(saturnPlanet);
 
-        const bpRing = new THREE.Mesh(new THREE.RingGeometry(25, 45, 64), new THREE.MeshStandardMaterial({ color: 0x4488ff, side: THREE.DoubleSide, transparent: true, opacity: 0.5 }));
-        bpRing.rotation.x = Math.PI / 2 + 0.2;
-        saturnGroup.add(bpRing);
+        // Cincin Saturnus (Multiple Rings for depth)
+        const ringMat = new THREE.MeshStandardMaterial({ 
+            color: 0x00f0ff, side: THREE.DoubleSide, transparent: true, opacity: 0.4, emissive: 0x004466 
+        });
+        const ring1 = new THREE.Mesh(new THREE.RingGeometry(24, 38, 64), ringMat);
+        ring1.rotation.x = Math.PI / 2 + 0.15;
+        saturnGroup.add(ring1);
+        
+        const ringMat2 = new THREE.MeshStandardMaterial({ color: 0xffffff, side: THREE.DoubleSide, transparent: true, opacity: 0.15 });
+        const ring2 = new THREE.Mesh(new THREE.RingGeometry(39, 42, 64), ringMat2);
+        ring2.rotation.x = Math.PI / 2 + 0.15;
+        saturnGroup.add(ring2);
 
-        // 3. MATAHARI BERSINAR TERANG (Di ujung jalur)
+
+        // 3. MATAHARI (Di ujung bawah)
         const sunGroup = new THREE.Group();
-        sunGroup.position.set(0, 0, -550);
+        sunGroup.position.set(0, 0, -580);
         scene.add(sunGroup);
 
-        // Membuat Tekstur Matahari secara Dinamis (Procedural Texture)
+        // Procedural Texture untuk Matahari
         function createSunTexture() {
             const canvas = document.createElement('canvas');
-            canvas.width = 512;
-            canvas.height = 512;
+            canvas.width = 512; canvas.height = 512;
             const ctx = canvas.getContext('2d');
             
-            // Warna dasar oranye
-            ctx.fillStyle = '#ff5500';
+            ctx.fillStyle = '#ff4500'; // Oranye tua
             ctx.fillRect(0, 0, 512, 512);
             
-            // Membuat efek bintik-bintik panas (Sunspots/Granulation)
-            for(let i = 0; i < 8000; i++) {
-                ctx.fillStyle = Math.random() > 0.5 ? '#ffaa00' : '#cc2200';
-                ctx.globalAlpha = Math.random() * 0.8;
+            for(let i = 0; i < 5000; i++) {
+                ctx.fillStyle = Math.random() > 0.5 ? '#ff8800' : '#aa1100';
+                ctx.globalAlpha = Math.random() * 0.7;
                 ctx.beginPath();
-                ctx.arc(Math.random() * 512, Math.random() * 512, Math.random() * 3 + 1, 0, Math.PI * 2);
+                ctx.arc(Math.random() * 512, Math.random() * 512, Math.random() * 4 + 1, 0, Math.PI * 2);
                 ctx.fill();
             }
-            
-            // Membuat area ledakan cahaya terang (Solar flares)
-            for(let i = 0; i < 40; i++) {
-                ctx.fillStyle = '#ffffff';
-                ctx.globalAlpha = 0.5;
-                ctx.beginPath();
-                ctx.arc(Math.random() * 512, Math.random() * 512, Math.random() * 40 + 10, 0, Math.PI * 2);
-                ctx.fill();
-            }
-            
             return new THREE.CanvasTexture(canvas);
         }
         
-        // Inti Matahari
         const sunMat = new THREE.MeshBasicMaterial({ color: 0xffffff, map: createSunTexture() });
-        const sun = new THREE.Mesh(new THREE.SphereGeometry(38, 64, 64), sunMat);
+        const sun = new THREE.Mesh(new THREE.SphereGeometry(45, 64, 64), sunMat);
         sunGroup.add(sun);
         
-        // Cahaya Matahari Inti (Penyinaran untuk lingkungan)
-        const sunLight = new THREE.PointLight(0xffddaa, 5, 800);
+        // Cahaya lingkungan dari matahari
+        const sunLight = new THREE.PointLight(0xffcc88, 5, 1000);
         sunGroup.add(sunLight);
         
-        // Efek Korona/Aura Berlapis agar Mewah (Additive Blending)
-        // Lapisan 1: Oranye Terang
-        const glowMat1 = new THREE.MeshBasicMaterial({ color: 0xff8800, transparent: true, opacity: 0.5, side: THREE.BackSide, blending: THREE.AdditiveBlending });
-        const glowSphere1 = new THREE.Mesh(new THREE.SphereGeometry(41, 64, 64), glowMat1);
-        sunGroup.add(glowSphere1);
+        // Efek Korona Berdenyut
+        const glowMat = new THREE.MeshBasicMaterial({ color: 0xff6600, transparent: true, opacity: 0.4, side: THREE.BackSide, blending: THREE.AdditiveBlending });
+        const glowSphere = new THREE.Mesh(new THREE.SphereGeometry(49, 64, 64), glowMat);
+        sunGroup.add(glowSphere);
 
-        // Lapisan 2: Merah Pudar (Glow Luar)
-        const glowMat2 = new THREE.MeshBasicMaterial({ color: 0xff3300, transparent: true, opacity: 0.25, side: THREE.BackSide, blending: THREE.AdditiveBlending });
-        const glowSphere2 = new THREE.Mesh(new THREE.SphereGeometry(48, 64, 64), glowMat2);
-        sunGroup.add(glowSphere2);
-
-        // Asteroid tersebar di sekitar path
+        // ==========================================
+        // ASTEROIDS (Debris Field)
+        // ==========================================
         const asteroids = [];
         const astGeo = new THREE.DodecahedronGeometry(1, 1);
-        const astMat = new THREE.MeshStandardMaterial({ color: 0x555555, roughness: 0.9 });
-        for(let i=0; i < 200; i++) {
+        const astMat = new THREE.MeshStandardMaterial({ 
+            color: 0x666666, 
+            roughness: 0.8,
+            bumpMap: textureLoader.load('https://cdn.jsdelivr.net/gh/mrdoob/three.js@master/examples/textures/planets/moon_1024.jpg'),
+            bumpScale: 0.05
+        });
+        
+        for(let i=0; i < 350; i++) {
             const mesh = new THREE.Mesh(astGeo, astMat);
-            mesh.position.set((Math.random() - 0.5) * 200, (Math.random() - 0.5) * 100, -(Math.random() * 500));
-            mesh.scale.setScalar(Math.random() * 2 + 0.5);
+            
+            // Distribusikan di sepanjang lorong sumbu Z
+            const zPos = -(Math.random() * 600);
+            
+            // Jauhkan asteroid dari jalur tengah kurva agar roket tidak menabrak secara brutal
+            let xPos = (Math.random() - 0.5) * 300;
+            let yPos = (Math.random() - 0.5) * 200;
+            
+            // Jika terlalu dekat dengan sumbu Z (jalur kamera), dorong keluar
+            if(Math.abs(xPos) < 20) xPos += Math.sign(xPos) * 20;
+            if(Math.abs(yPos) < 20) yPos += Math.sign(yPos) * 20;
+
+            mesh.position.set(xPos, yPos, zPos);
+            
+            const scale = Math.random() * 3 + 0.5;
+            mesh.scale.setScalar(scale);
+            
+            // Simpan kecepatan rotasi unik tiap asteroid
+            mesh.userData = {
+                rotX: (Math.random() - 0.5) * 0.01,
+                rotY: (Math.random() - 0.5) * 0.01,
+                rotZ: (Math.random() - 0.5) * 0.01
+            };
+            
             scene.add(mesh);
             asteroids.push(mesh);
         }
 
         // ==========================================
-        // ROKET & WADAH KONTROL (CONTAINER)
+        // ROKET
         // ==========================================
-        // Kita bungkus roket ke dalam Container agar Container mengikuti kurva path, 
-        // sedangkan Roket di dalamnya bergerak bermanuver (banking).
         const rocketContainer = new THREE.Group();
         scene.add(rocketContainer);
 
         const createRocket = () => {
-            const rocketGroup = new THREE.Group();
-            const bodyMat = new THREE.MeshStandardMaterial({ color: 0xffffff, metalness: 0.4, roughness: 0.5 });
-            const redMat = new THREE.MeshStandardMaterial({ color: 0x00F0FF, metalness: 0.8, roughness: 0.2 }); 
+            const rGroup = new THREE.Group();
+            // Desain body ala pesawat futuristik (Putih cerah dengan aksen hitam)
+            const bodyMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.2, metalness: 0.1 });
+            const blackMat = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.5 });
+            const glowMat = new THREE.MeshBasicMaterial({ color: 0x00F0FF }); 
             
-            const mainBody = new THREE.Mesh(new THREE.CylinderGeometry(0.6, 0.6, 4, 32), bodyMat);
-            rocketGroup.add(mainBody);
+            const mainBody = new THREE.Mesh(new THREE.CylinderGeometry(0.7, 0.7, 4.5, 32), bodyMat);
+            rGroup.add(mainBody);
 
-            const nose = new THREE.Mesh(new THREE.ConeGeometry(0.6, 1.5, 32), redMat);
-            nose.position.y = 2.75;
-            rocketGroup.add(nose);
+            const nose = new THREE.Mesh(new THREE.ConeGeometry(0.7, 1.8, 32), blackMat);
+            nose.position.y = 3.15;
+            rGroup.add(nose);
 
+            // Sirip
             const finGeo = new THREE.Shape();
-            finGeo.moveTo(0, 0); finGeo.lineTo(0.8, -0.2); finGeo.lineTo(0.8, -1.5); finGeo.lineTo(0, -1); finGeo.closePath();
-            const finGeometry = new THREE.ExtrudeGeometry(finGeo, { steps: 1, depth: 0.05, bevelEnabled: true, bevelThickness: 0.02, bevelSize: 0.02, bevelSegments: 2 });
+            finGeo.moveTo(0, 0); finGeo.lineTo(1.2, -0.5); finGeo.lineTo(1.2, -1.8); finGeo.lineTo(0, -1.2); finGeo.closePath();
+            const finGeometry = new THREE.ExtrudeGeometry(finGeo, { steps: 1, depth: 0.1, bevelEnabled: true, bevelThickness: 0.02, bevelSize: 0.02, bevelSegments: 2 });
             for (let i = 0; i < 4; i++) {
-                const fin = new THREE.Mesh(finGeometry, redMat);
-                fin.position.y = -1.5; fin.rotation.y = (Math.PI / 2) * i; fin.translateX(0.55); fin.rotation.z = Math.PI/2;
-                rocketGroup.add(fin);
+                const fin = new THREE.Mesh(finGeometry, bodyMat);
+                fin.position.y = -1.8; fin.rotation.y = (Math.PI / 2) * i; fin.translateX(0.65); fin.rotation.z = Math.PI/2;
+                rGroup.add(fin);
             }
-
-            // Api Mesin Utama
-            const flameGeo = new THREE.ConeGeometry(0.35, 1.8, 16);
-            const flameMat = new THREE.MeshBasicMaterial({ color: 0x00ffff, transparent: true, opacity: 0.8 });
-            const mainFlame = new THREE.Mesh(flameGeo, flameMat);
-            mainFlame.position.y = -3.4; mainFlame.rotation.x = Math.PI;
-            rocketGroup.add(mainFlame);
-
-            const flameLight = new THREE.PointLight(0x00ffff, 2, 15);
-            flameLight.position.y = -3;
-            rocketGroup.add(flameLight);
-
-            // Karena default CylinderGeometry berdiri tegak (Y), kita harus merubahnya 
-            // menunjuk ke arah Z negatif agar sinkron dengan Camera dan Path lookAt
-            rocketGroup.rotation.x = -Math.PI / 2;
-            rocketGroup.scale.set(0.6, 0.6, 0.6);
             
-            return { group: rocketGroup, flame: mainFlame };
+            // Cincin Neon Biru (Aksen Sci-Fi)
+            const neonRing = new THREE.Mesh(new THREE.TorusGeometry(0.72, 0.05, 16, 32), glowMat);
+            neonRing.position.y = 1.0;
+            neonRing.rotation.x = Math.PI / 2;
+            rGroup.add(neonRing);
+
+            const mainFlame = new THREE.Mesh(new THREE.ConeGeometry(0.4, 2.5, 16), new THREE.MeshBasicMaterial({ color: 0x00f0ff, transparent: true, opacity: 0.8, blending: THREE.AdditiveBlending }));
+            mainFlame.position.y = -3.8; mainFlame.rotation.x = Math.PI;
+            rGroup.add(mainFlame);
+
+            rGroup.rotation.x = -Math.PI / 2;
+            rGroup.scale.set(0.5, 0.5, 0.5);
+            return { group: rGroup, flame: mainFlame };
         };
         const rocketData = createRocket();
         const rocket = rocketData.group;
         const rocketFlame = rocketData.flame;
-        
-        // Masukkan roket ke wadah (container)
         rocketContainer.add(rocket);
 
-        // ==========================================
-        // SISTEM PARTIKEL ASAP & API ROKET
-        // ==========================================
+        // Sistem Partikel Ekor
         const particles = [];
-        const particleGeo = new THREE.DodecahedronGeometry(0.2, 0);
+        const particleGeo = new THREE.DodecahedronGeometry(0.15, 0);
 
         function spawnParticle() {
-            // 50% Asap Putih/Abu, 50% Api Cyan/Biru
             const isSmoke = Math.random() > 0.5;
-            const color = isSmoke ? 0xaaaaaa : (Math.random() > 0.5 ? 0x00ffff : 0x0055ff);
+            const color = isSmoke ? 0xcccccc : (Math.random() > 0.5 ? 0x00f0ff : 0x0066ff);
             
-            const pMat = new THREE.MeshBasicMaterial({ color: color, transparent: true, opacity: isSmoke ? 0.3 : 0.8 });
+            const pMat = new THREE.MeshBasicMaterial({ color: color, transparent: true, opacity: isSmoke ? 0.2 : 0.6 });
             const particle = new THREE.Mesh(particleGeo, pMat);
             
-            // Lokasi spawn: Titik ekor roket berdasarkan posisi dunia (World Position)
-            const tailPos = new THREE.Vector3(0, -3.5, 0); 
+            const tailPos = new THREE.Vector3(0, -4.0, 0); 
             tailPos.applyMatrix4(rocket.matrixWorld);
             
             particle.position.copy(tailPos);
-            // Acak letak awal (spread)
-            particle.position.x += (Math.random() - 0.5) * 0.4;
-            particle.position.y += (Math.random() - 0.5) * 0.4;
-            particle.position.z += (Math.random() - 0.5) * 0.4;
+            particle.position.x += (Math.random() - 0.5) * 0.3;
+            particle.position.y += (Math.random() - 0.5) * 0.3;
+            particle.position.z += (Math.random() - 0.5) * 0.3;
             
-            // Arah semburan (melawan arah gerak)
-            const velocity = new THREE.Vector3(
-                (Math.random() - 0.5) * 0.05,
-                (Math.random() - 0.5) * 0.05,
-                (Math.random() * 0.1) + 0.1 // Z positif = ke belakang
-            );
+            const velocity = new THREE.Vector3((Math.random() - 0.5) * 0.03, (Math.random() - 0.5) * 0.03, (Math.random() * 0.1) + 0.05 );
             
             scene.add(particle);
             particles.push({ mesh: particle, velocity: velocity, life: 1.0, isSmoke: isSmoke });
         }
 
-        function updateParticles() {
-            for (let i = particles.length - 1; i >= 0; i--) {
-                const p = particles[i];
-                p.life -= 0.03; 
-                if (p.life <= 0) {
-                    scene.remove(p.mesh); p.mesh.material.dispose(); particles.splice(i, 1);
-                } else {
-                    p.mesh.position.add(p.velocity);
-                    const scale = p.isSmoke ? 1 + (1 - p.life) * 3 : p.life * 1.5; 
-                    p.mesh.scale.setScalar(scale);
-                    p.mesh.material.opacity = p.life * (p.isSmoke ? 0.3 : 0.8);
-                }
-            }
-        }
+        // ==========================================
+        // MOUSE PARALLAX EFFECT (Abhishek Badar Core Feature)
+        // ==========================================
+        let mouseX = 0;
+        let mouseY = 0;
+        let targetX = 0;
+        let targetY = 0;
+        const windowHalfX = window.innerWidth / 2;
+        const windowHalfY = window.innerHeight / 2;
+
+        document.addEventListener('mousemove', (event) => {
+            // Normalisasi posisi mouse dari -1 ke 1
+            mouseX = (event.clientX - windowHalfX) / windowHalfX;
+            mouseY = (event.clientY - windowHalfY) / windowHalfY;
+        });
+
 
         // ==========================================
         // ANIMATION & SCROLL LOGIC
@@ -468,9 +550,7 @@
         
         document.body.onscroll = () => {
             const h = document.documentElement, b = document.body, st = 'scrollTop', sh = 'scrollHeight';
-            // Scroll Percent: 0.0 (atas) hingga 1.0 (bawah)
             targetScroll = (h[st] || b[st]) / ((h[sh] || b[sh]) - h.clientHeight);
-            // Batasi persentase maksimal agar tidak kehabisan path (0.0 sampai 0.99)
             targetScroll = Math.min(targetScroll, 0.99);
         };
 
@@ -479,72 +559,95 @@
         function animate() {
             requestAnimationFrame(animate);
             const elapsedTime = clock.getElapsedTime();
+            const delta = clock.getDelta();
 
-            // Smooth Scroll LERP (Linear Interpolation)
             currentScroll += (targetScroll - currentScroll) * 0.05;
 
-            // 1. UPDATE POSISI ROKET CONTAINER DI SEPANJANG JALUR (PATH)
-            // Mengambil titik koordinat (X,Y,Z) di atas kurva berdasarkan persentase scroll
+            // 1. UPDATE PATH & CONTAINER
             const pathPoint = pathCurve.getPointAt(currentScroll);
             rocketContainer.position.copy(pathPoint);
-
-            // Mengarahkan moncong container mengikuti lengkungan kurva
             const tangent = pathCurve.getTangentAt(currentScroll);
-            const lookAtTarget = pathPoint.clone().add(tangent);
-            rocketContainer.lookAt(lookAtTarget);
+            rocketContainer.lookAt(pathPoint.clone().add(tangent));
 
-            // 2. EFEK MANUVER (SWERVING & BANKING) PADA ROKET
-            // Animasi roket yang bergerak organik di dalam containernya
-            const swerveX = Math.sin(elapsedTime * 1.2) * 1.5;
-            const swerveY = Math.cos(elapsedTime * 0.8) * 1.0;
-            
-            rocket.position.x = swerveX;
-            rocket.position.y = swerveY;
-            
-            // Banking: miringkan roket saat berbelok (Roll & Pitch)
-            // Karena roket sudah diputar -Math.PI/2 di sumbu X, rotasi Z adalah roll
-            rocket.rotation.z = -swerveX * 0.15; 
-            rocket.rotation.y = swerveX * 0.05;
+            // 2. MOUSE PARALLAX PADA CAMERA & ROKET
+            // Mengayun (Sway) kebalikan arah mouse untuk efek kedalaman
+            targetX = mouseX * 2; // Intensitas goyangan X
+            targetY = mouseY * 2; // Intensitas goyangan Y
 
-            // Animasi jet flame
+            // 3. EFEK MANUVER ROKET (Organic Hover + Mouse Parallax)
+            const organicHoverX = Math.sin(elapsedTime * 1.5) * 0.8;
+            const organicHoverY = Math.cos(elapsedTime * 1.0) * 0.5;
+            
+            // Roket bereaksi pada mouse
+            rocket.position.x = organicHoverX + (-targetX * 0.5);
+            rocket.position.y = organicHoverY + (targetY * 0.5);
+            
+            // Banking dinamis
+            rocket.rotation.z = (-organicHoverX * 0.15) + (targetX * 0.1); 
+            rocket.rotation.y = (organicHoverX * 0.05) - (targetX * 0.05);
+
             const flameScale = 1 + Math.random() * 0.3;
             rocketFlame.scale.setScalar(flameScale);
 
-            // Munculkan partikel asap di ekor
+            // Particles
             spawnParticle();
             if(Math.random() > 0.5) spawnParticle();
-            updateParticles();
+            
+            for (let i = particles.length - 1; i >= 0; i--) {
+                const p = particles[i];
+                p.life -= 0.025; 
+                if (p.life <= 0) {
+                    scene.remove(p.mesh); p.mesh.material.dispose(); particles.splice(i, 1);
+                } else {
+                    p.mesh.position.add(p.velocity);
+                    p.mesh.scale.setScalar(p.isSmoke ? 1 + (1 - p.life) * 2 : p.life * 1.2);
+                    p.mesh.material.opacity = p.life * (p.isSmoke ? 0.2 : 0.6);
+                }
+            }
 
-            // 3. KAMERA MENGIKUTI ROKET
-            // Kamera diletakkan di belakang dan sedikit di atas roket container
-            const camOffset = new THREE.Vector3(0, 3, 12); // (X, Y, Z jarak dari belakang)
-            camOffset.applyMatrix4(rocketContainer.matrixWorld); // Konversi ke posisi dunia nyata
+            // 4. KAMERA
+            // Menempatkan kamera di belakang kontainer rute
+            const camOffset = new THREE.Vector3(0, 3, 15);
+            camOffset.applyMatrix4(rocketContainer.matrixWorld);
             
-            // Kamera perlahan mengejar posisi yang ditentukan (Smooth Follow)
-            camera.position.lerp(camOffset, 0.1);
+            // Terapkan Parallax ke posisi kamera dunia (Kamera bergeser melihat sekeliling)
+            camOffset.x += targetX * 1.5;
+            camOffset.y -= targetY * 1.5; // Balik agar terasa natural
             
-            // Jika berada di akhir scroll, kamera menatap ke atas (Matahari), jika tidak, kamera fokus ke roket
+            camera.position.lerp(camOffset, 0.08); // Kejar perlahan
+            
             if (currentScroll > 0.9) {
-                camera.lookAt(sunGroup.position);
+                // Di dasar, fokus mendongak ke Matahari (Tapi tetap terpengaruh Parallax)
+                const sunTarget = sunGroup.position.clone();
+                sunTarget.x += targetX * 10;
+                sunTarget.y -= targetY * 10;
+                camera.lookAt(sunTarget);
             } else {
                 camera.lookAt(rocketContainer.position);
             }
 
-            // 4. ROTASI PLANET
-            earth.rotation.y += 0.001; 
-            clouds.rotation.y += 0.0015; // Awan bergerak sedikit lebih cepat dari Bumi
-            moon.rotation.y += 0.002;    // Rotasi bulan pada porosnya
-            earthSystem.rotation.y += 0.0015; // Kecepatan Orbit
-            saturnGroup.rotation.y -= 0.001;
-            sunGroup.rotation.y += 0.001; // Rotasi Matahari
+            // 5. ROTASI REALISTIS PLANET & SATELIT
+            earth.rotation.y += 0.0008; 
+            clouds.rotation.y += 0.0012; 
+            moon.rotation.y += 0.001;
+            earthSystem.rotation.y += 0.001; 
             
-            // Aura matahari berdenyut (Pulse effect)
-            glowSphere1.scale.setScalar(1 + Math.sin(elapsedTime * 3) * 0.02);
-            glowSphere2.scale.setScalar(1 + Math.cos(elapsedTime * 2) * 0.04);
+            // Satelit mengelilingi poros orbitnya
+            satOrbit.rotation.y += 0.005; 
+            // Satelit itu sendiri berputar pelan
+            satelliteGroup.rotation.x += 0.002;
 
-            asteroids.forEach(ast => { ast.rotation.x += 0.002; ast.rotation.y += 0.002; });
+            saturnGroup.rotation.y -= 0.0005;
+            sunGroup.rotation.y += 0.001;
+            glowSphere.scale.setScalar(1 + Math.sin(elapsedTime * 3) * 0.03);
 
-            // UPDATE UI METERAN
+            // Rotasi unik asteroid
+            asteroids.forEach(ast => { 
+                ast.rotation.x += ast.userData.rotX; 
+                ast.rotation.y += ast.userData.rotY; 
+                ast.rotation.z += ast.userData.rotZ; 
+            });
+
             const altMeter = document.getElementById('alt-meter');
             if(altMeter) altMeter.innerText = `ALT: ${Math.abs(rocketContainer.position.z).toFixed(2)} KM`;
 
