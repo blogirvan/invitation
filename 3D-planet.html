@@ -22,6 +22,8 @@
         .hologram-card { background: rgba(10, 15, 30, 0.4); border: 1.5px solid rgba(0, 240, 255, 0.4); border-radius: 12px; box-shadow: 0 0 15px rgba(0, 240, 255, 0.15), inset 0 0 10px rgba(0, 240, 255, 0.05); backdrop-filter: blur(8px); padding: 20px 24px; position: relative; transition: all 0.3s ease; width: 100%; max-width: 380px; }
         .hologram-card:hover { box-shadow: 0 0 25px rgba(0, 240, 255, 0.3), inset 0 0 15px rgba(0, 240, 255, 0.1); border-color: rgba(0, 240, 255, 0.8); transform: translateY(-5px); }
         .hologram-badge { width: 42px; height: 42px; border-radius: 50%; border: 2px solid #00F0FF; display: flex; align-items: center; justify-content: center; font-family: 'Space Mono', monospace; font-weight: bold; font-size: 1rem; color: white; box-shadow: 0 0 10px rgba(0, 240, 255, 0.5); }
+        .reveal-element { opacity: 0; transform: translateY(50px); transition: all 0.8s ease-out; }
+        .reveal-element.visible { opacity: 1; transform: translateY(0); }
         .btn-glow { animation: pulse-glow 3s infinite; }
         @keyframes pulse-glow { 0%, 100% { box-shadow: 0 0 15px rgba(0, 240, 255, 0.2); } 50% { box-shadow: 0 0 25px rgba(0, 240, 255, 0.5); } }
         ::-webkit-scrollbar { width: 8px; } ::-webkit-scrollbar-track { background: #050510; } ::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; } ::-webkit-scrollbar-thumb:hover { background: #555; }
@@ -76,107 +78,91 @@
             </div>
         </section>
 
-        <section id="about" class="scroll-section justify-center md:justify-start">
+       <section id="about" class="scroll-section justify-center md:justify-start">
             <div class="glass-panel p-6 md:p-10 w-full max-w-lg pointer-events-auto">
                 <div class="font-mono text-space-glow text-xs mb-3">01 // TENTANG</div>
-                <h2 class="text-2xl md:text-4xl font-bold mb-4">About Me</h2>
-                <p class="text-gray-300 mb-4 text-xs md:text-sm leading-relaxed"> Seorang pengembang otodidak dari Indonesia yang berdedikasi dalam menciptakan situs web dan aplikasi yang responsif, interaktif, dan mudah digunakan.<br><br>
-                    Fokus saya membangun sistem yang sederhana, cepat, dan mudah dipelihara. Mengurangi dependensi dan merancang antarmuka langsung untuk skala nyata. <br><br>Saya termotivasi oleh rasa ingin tau tentang bagaimana Teknologi dapat memecahkan masalah dan meningkatkan pengalaman pengguna. <br>
-				</p>
-<div class="border-t border-gray-700 pt-4 font-mono text-[10px] md:text-xs text-gray-400 space-y-2">
-                    <div><span class="text-space-glow">▶</span> Bahasa Inti: HTML5, CSS3, JavaScript</div>
-	<div><span class="text-space-glow">▶</span> Styling & Tools: Tailwind CSS, Bootstrap</div>
-                    <div><span class="text-space-glow">▶</span> Berbasis di Surabaya, East Java, ID</div>
+                <h2 class="text-2xl md:text-4xl font-bold mb-4">Full stack.</h2>
+                <p class="text-gray-300 mb-4 text-xs md:text-sm leading-relaxed">
+                    Saya membangun sistem yang sederhana, cepat, dan mudah dipelihara. Mengurangi dependensi dan merancang antarmuka langsung untuk skala nyata.
+                </p>
             </div>
         </section>
 
-<section id="career" class="scroll-section relative flex-col justify-center items-center py-32 md:py-48 min-h-[120vh]">
-            <div class="font-mono text-space-glow text-xs mb-10 w-full text-center md:text-left pointer-events-auto max-w-4xl">02 // KARIER SAYA</div>
+        <!-- PROYEK SECTION (Gaya Abhishek Badar) -->
+        <section id="projects" class="relative w-full min-h-[250vh]">
             
-            <div class="w-full max-w-5xl flex flex-col gap-16 md:gap-24 pointer-events-auto relative z-20">
-                <div class="hologram-card self-start md:ml-12">
-                    <div class="flex justify-between items-center mb-3">
-                        <h3 class="text-2xl font-bold tracking-wide">SDN Tempeh Lor 02</h3>
-                        <div class="hologram-badge">1</div>
+            <!-- Sticky Title di Kiri -->
+            <div class="sticky top-0 h-screen w-full max-w-7xl mx-auto px-4 md:px-16 flex flex-col justify-center pointer-events-none z-10">
+                <div class="max-w-md pointer-events-auto reveal-element">
+                    <div class="font-mono text-space-glow text-[10px] md:text-xs mb-3 uppercase tracking-widest">03 // Some things I've built</div>
+                    <h2 class="text-4xl md:text-6xl font-bold mb-4 tracking-tight">Projects in orbit</h2>
+                    <div class="flex items-center gap-2 text-sm text-gray-300 mb-2 font-mono">
+                        <span class="text-space-glow">▶</span> Click a card to inspect
                     </div>
-                    <p class="text-space-glow text-xs font-mono tracking-widest uppercase">2000 - 2007</p>
-                </div>
-
-                <div class="hologram-card self-end md:mr-12">
-                    <div class="flex justify-between items-center mb-3">
-                        <h3 class="text-2xl font-bold tracking-wide">SMP Negeri 1 Tempeh</h3>
-                        <div class="hologram-badge">02</div>
-                    </div>
-                    <p class="text-space-glow text-[10px] md:text-xs font-mono tracking-widest uppercase">2007 - 2010</p>
-                </div>
-
-                <div class="hologram-card self-start md:ml-32">
-                    <div class="flex justify-between items-center mb-3">
-                        <h3 class="text-2xl font-bold tracking-wide">SMK Negeri Pasirian</h3>
-                        <div class="hologram-badge">03</div>
-                    </div>
-                    <p class="text-space-glow text-[10px] md:text-xs font-mono tracking-widest uppercase">2010 - 2013</p>
+                    <a href="#" class="text-xs font-mono text-gray-500 hover:text-white transition-colors">Explore the archive ↗</a>
                 </div>
             </div>
-        </section>
 
-<section id="work" class="scroll-section relative flex-col justify-center items-center py-32 md:py-48 min-h-[120vh]">
-            <div class="font-mono text-space-glow text-xs mb-10 w-full text-center md:text-left pointer-events-auto max-w-4xl">03 // WORK EXPERIENCE</div>
-            
-            <div class="w-full max-w-5xl flex flex-col gap-16 md:gap-24 pointer-events-auto relative z-20">
-                <div class="hologram-card self-start md:ml-12">
-                    <div class="flex justify-between items-center mb-3">
-                        <h2 class="text-2xl font-bold tracking-wide">Belajar Internet <br><span class="text-space-glow">Google Search Engine</span></h2>
-                        <div class="hologram-badge">01</div>
+            <!-- Kartu Proyek Mengambang (Scrolling di Kanan) -->
+            <div class="relative z-20 w-full max-w-7xl mx-auto px-4 md:px-16 -mt-[80vh] pb-[20vh] pointer-events-none flex justify-end">
+                <!-- Container Kartu - Didorong ke kanan di Desktop -->
+                <div class="w-full md:w-[55%] flex flex-col gap-20 md:gap-40 pt-[50vh] pointer-events-auto">
+                    
+                    <!-- Card 1 -->
+                    <div class="hologram-card w-full transform md:-translate-x-12 reveal-element">
+                        <div class="flex justify-between items-start mb-5">
+                            <div class="flex flex-wrap gap-2">
+                                <span class="font-mono text-[9px] text-space-glow bg-space-glow/10 border border-space-glow/20 px-2 py-1 rounded">PYTHON</span>
+                                <span class="font-mono text-[9px] text-space-glow bg-space-glow/10 border border-space-glow/20 px-2 py-1 rounded">TENSORFLOW</span>
+                            </div>
+                            <i class="fab fa-github text-gray-400 hover:text-white cursor-pointer transition-colors text-lg"></i>
+                        </div>
+                        <h3 class="text-xl md:text-2xl font-bold mb-3 text-white">Traffic Penalty Analyzer</h3>
+                        <p class="text-gray-400 text-xs md:text-sm mb-6 leading-relaxed">
+                            Aplikasi pemantauan real-time menggunakan AI untuk mendeteksi kepadatan lalu lintas dan pelanggaran melalui feed kamera CCTV.
+                        </p>
+                        <div class="flex gap-5 font-mono text-[10px] border-t border-gray-700/50 pt-4">
+                            <a href="#" class="text-gray-300 hover:text-space-glow transition-colors">GITHUB ↗</a>
+                            <a href="#" class="text-gray-300 hover:text-space-glow transition-colors">LIVE DEMO ↗</a>
+                        </div>
                     </div>
-                    <p class="text-space-glow text-xs font-mono tracking-widest uppercase">JAN 2011 - SEKARANG • HYBRID</p>
-                </div>
 
-                <div class="hologram-card self-end md:mr-12">
-                    <div class="flex justify-between items-center mb-3">
-                        <h2 class="text-2xl font-bold tracking-wide">Mencari Rupiah <br><span class="text-space-glow">Blogger • Fb • Twitter</span></h2>
-                        <div class="hologram-badge">02</div>
+                    <!-- Card 2 -->
+                    <div class="hologram-card w-full transform md:translate-x-12 reveal-element">
+                        <div class="flex justify-between items-start mb-5">
+                            <div class="flex flex-wrap gap-2">
+                                <span class="font-mono text-[9px] text-space-glow bg-space-glow/10 border border-space-glow/20 px-2 py-1 rounded">NODE.JS</span>
+                                <span class="font-mono text-[9px] text-space-glow bg-space-glow/10 border border-space-glow/20 px-2 py-1 rounded">GRAPH API</span>
+                            </div>
+                            <i class="fab fa-github text-gray-400 hover:text-white cursor-pointer transition-colors text-lg"></i>
+                        </div>
+                        <h3 class="text-xl md:text-2xl font-bold mb-3 text-white">Facebook Auto-Poster</h3>
+                        <p class="text-gray-400 text-xs md:text-sm mb-6 leading-relaxed">
+                            Alat otomatisasi media sosial untuk manajemen interaksi (like, comment, share) berskala besar menggunakan integrasi Graph API resmi.
+                        </p>
+                        <div class="flex gap-5 font-mono text-[10px] border-t border-gray-700/50 pt-4">
+                            <a href="#" class="text-gray-300 hover:text-space-glow transition-colors">GITHUB ↗</a>
+                        </div>
                     </div>
-                    <p class="text-space-glow text-[10px] md:text-xs font-mono tracking-widest uppercase">AGU 2012 - DES 2015 • REMOTE</p>
-                </div>
 
-                <div class="hologram-card self-start md:ml-32">
-                    <div class="flex justify-between items-center mb-3">
-                        <h2 class="text-2xl font-bold tracking-wide">Bekerja <br><span class="text-space-glow">JNE Express Surabaya</span></h2>
-                        <div class="hologram-badge">03</div>
+                    <!-- Card 3 -->
+                    <div class="hologram-card w-full transform md:-translate-x-6 reveal-element">
+                        <div class="flex justify-between items-start mb-5">
+                            <div class="flex flex-wrap gap-2">
+                                <span class="font-mono text-[9px] text-space-glow bg-space-glow/10 border border-space-glow/20 px-2 py-1 rounded">THREE.JS</span>
+                                <span class="font-mono text-[9px] text-space-glow bg-space-glow/10 border border-space-glow/20 px-2 py-1 rounded">WEBGL</span>
+                            </div>
+                            <i class="fas fa-external-link-alt text-gray-400 hover:text-white cursor-pointer transition-colors text-sm"></i>
+                        </div>
+                        <h3 class="text-xl md:text-2xl font-bold mb-3 text-white">3D Space Portfolio</h3>
+                        <p class="text-gray-400 text-xs md:text-sm mb-6 leading-relaxed">
+                            Eksplorasi WebGL yang menghadirkan pengalaman portofolio interaktif dengan fisika roket, tata surya prosedural, dan navigasi kurva 3D.
+                        </p>
+                        <div class="flex gap-5 font-mono text-[10px] border-t border-gray-700/50 pt-4">
+                            <a href="#" class="text-gray-300 hover:text-space-glow transition-colors">LIVE DEMO ↗</a>
+                        </div>
                     </div>
-                    <p class="text-space-glow text-[10px] md:text-xs font-mono tracking-widest uppercase">JUN 2014 - SEKARANG • ADMIN</p>
-                </div>
-            </div>
-        </section>
 
-
-        <section id="projects" class="scroll-section relative flex-col justify-center items-center py-32 md:py-48 min-h-[120vh]">
-            <div class="font-mono text-space-glow text-xs mb-10 w-full text-center md:text-left pointer-events-auto max-w-4xl">04 // SKILL MODULES ONLINE</div>
-            
-            <div class="w-full max-w-5xl flex flex-col gap-16 md:gap-24 pointer-events-auto relative z-20">
-                <div class="hologram-card self-start md:ml-12">
-                    <div class="flex justify-between items-center mb-3">
-                        <h3 class="text-2xl font-bold tracking-wide">Web 3D</h3>
-                        <div class="hologram-badge">01</div>
-                    </div>
-                    <p class="text-space-glow text-xs font-mono tracking-widest uppercase">THREE.JS • HTML5 • CSS</p>
-                </div>
-
-                <div class="hologram-card self-end md:mr-12">
-                    <div class="flex justify-between items-center mb-3">
-                        <h3 class="text-2xl font-bold tracking-wide">AI & Automation</h3>
-                        <div class="hologram-badge">02</div>
-                    </div>
-                    <p class="text-space-glow text-[10px] md:text-xs font-mono tracking-widest uppercase">GPTS • TENSORFLOW • BOT API • PhP</p>
-                </div>
-
-                <div class="hologram-card self-start md:ml-32">
-                    <div class="flex justify-between items-center mb-3">
-                        <h3 class="text-2xl font-bold tracking-wide">Template Design</h3>
-                        <div class="hologram-badge">03</div>
-                    </div>
-                    <p class="text-space-glow text-[10px] md:text-xs font-mono tracking-widest uppercase">CSS • JAVASCRIPT • TAILWIND • XML</p>
                 </div>
             </div>
         </section>
@@ -196,10 +182,10 @@
     </main>
 
     <!-- Three.js CDN -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    
+     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script>
-        const sections = document.querySelectorAll('.scroll-section');
+        const sections = document.querySelectorAll('.scroll-section, .reveal-element');
+        
         const observerOptions = { root: null, threshold: 0.15, rootMargin: "0px" };
         const observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => { if (entry.isIntersecting) entry.target.classList.add('visible'); });
