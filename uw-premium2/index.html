@@ -188,7 +188,7 @@
     <!-- ==============================================================
          SISI KIRI: FIXED PADA DESKTOP (Tidak ikut ter-scroll)
          ============================================================== -->
-    <aside class="hidden lg:block lg:w-[60%] h-screen fixed top-0 left-0 bg-[url('homebg.png')] bg-cover bg-center z-0">
+    <aside class="hidden lg:block lg:w-[60%] h-screen fixed top-0 left-0 bg-[url('background.png')] bg-cover bg-center z-0">
         <div class="absolute inset-0 gradient-overlay"></div>
         <div class="absolute bottom-10 left-16 max-w-xl text-white z-10" data-aos="fade-right" data-aos-duration="1500">
             <p class="font-serif-premium text-sm tracking-[0.2em] uppercase mb-4">The Wedding Of</p>
@@ -286,10 +286,14 @@
                             </div>
 
                             <!-- Bunga Ungu -->
-                            <img src="https://attarivitation.com/wp-content/uploads/2026/02/Illustrasi-Orn.webp" alt="Top Floral" class="absolute -top-4 -right-6 w-36 z-20 pointer-events-none animate-sway-right">
+                            <img src="https://attarivitation.com/wp-content/uploads/2026/02/Illustrasi-Orn.webp" alt="Top Floral" class="absolute -top-5 -right-6 w-36 z-20 pointer-events-none animate-sway-right -rotate-12">
 
                             <!-- Kupu-Kupu -->
-                            <img src="https://attarivitation.com/wp-content/uploads/2026/02/Kupu-759x1024.webp" alt="Butterfly" class="absolute top-8 -right-8 w-10 z-30 pointer-events-none animate-flutter">
+                            <!-- Animasi terbang diletakkan di div pembungkus -->
+                            <div class="absolute top-8 -right-8 w-10 z-30 pointer-events-none animate-flutter">
+                                <!-- Gambar dibalik menghadap kiri (scale-x-[-1]) -->
+                                <img src="https://attarivitation.com/wp-content/uploads/2026/02/Kupu-759x1024.webp" alt="Butterfly" class="w-full h-full transform scale-x-[-1] -rotate-12">
+                            </div>
 
                             <!-- Buket Bunga Besar -->
 			    <div class="absolute -bottom-0 -right 10 w-[180px] z-10 pointer-events-none animate-sway-right">
@@ -328,7 +332,11 @@
                             </div>
 
                             <!-- Bunga Ungu -->
-                            <img src="https://attarivitation.com/wp-content/uploads/2026/02/Illustrasi-Orn.webp" alt="Top Floral" class="absolute -top-4 -left-6 w-36 z-20 pointer-events-none animate-sway-left transform scale-x-[-1]">
+                            <!-- Posisi dan Animasi diletakkan di div pembungkus -->
+                            <div class="absolute -top-4 -left-6 w-36 z-20 pointer-events-none animate-sway-right">
+                                <!-- Gambar dibalik menghadap kiri (scale-x-[-1]) -->
+                                <img src="https://attarivitation.com/wp-content/uploads/2026/02/Illustrasi-Orn.webp" alt="Top Floral" class="w-full h-full transform scale-x-[-1] -rotate-12">
+                            </div>
 
                             <!-- Kupu-Kupu -->
                             <img src="https://attarivitation.com/wp-content/uploads/2026/02/Kupu-759x1024.webp" alt="Butterfly" class="absolute top-8 -left-8 w-10 z-30 pointer-events-none animate-flutter transform scale-x-[-1]">
@@ -1058,5 +1066,27 @@ Kehadiran Bapak/Ibu/Saudara/i merupakan suatu tanda kasih bagi kami. Apabila ing
         });
 
     </script>
+<script type='text/javascript'>
+/*
+================================
+Blog Irvan Efendy ==============
+http://irvan-efendy.blogspot.com
+================================
+*/
+//<![CDATA[
+function bieCU(e){
+if (e.ctrlKey && e.which == 85){
+window.location.replace("https://irvan-efendi.blogspot.com");
+return false;
+}
+}document.onkeydown = bieCU;
+function bieKK(e){
+if (e.which == 3){
+window.location.replace("https://tiktok.com/@irvanefendy_");
+return false;
+}
+}document.oncontextmenu = bieKK;
+//]]>
+</script>
 </body>
 </html>
