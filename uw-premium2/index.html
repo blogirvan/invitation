@@ -989,60 +989,104 @@ Kehadiran Bapak/Ibu/Saudara/i merupakan suatu tanda kasih bagi kami. Apabila ing
             counter.innerText = `${currentImageIndex + 1} / ${galleryImages.length}`;
         }
 
-	// 7. Fungsi Simulasi Kirim Ucapan RSVP
+	// 7. Script Terintegrasi dengan Google Sheets
+        
+        // PASTE URL DARI GOOGLE APPS SCRIPT DI BAWAH INI:
+        const scriptURL = 'https://script.google.com/macros/s/AKfycbyvRnp4b1DdJiiVvCgYAGHQsbLvUosxmfXo6UUmtu1BXN_h1phB4fO571kz9C3ZvXAj/exec'; 
+
+        // Otomatis mengambil data ucapan saat web dibuka
+        document.addEventListener("DOMContentLoaded", loadWishes);
+
         function kirimUcapan(event) {
-            // Mencegah halaman reload (refresh)
             event.preventDefault();
-
-            // Mengambil nilai dari form
-            const nama = document.getElementById('namaPengirim').value;
-            const status = document.getElementById('statusHadir').value;
-            const pesan = document.getElementById('pesanUcapan').value;
-            
-            // Ambil inisial huruf pertama nama pengirim
-            const inisial = nama.charAt(0).toUpperCase();
-
-            // Setelan gaya berdasarkan status kehadiran
-            const isHadir = status === 'hadir';
-            const warnaGaris = isHadir ? 'bg-green-500/80' : 'bg-red-400/80';
-            const iconKehadiran = isHadir ? '<i class="fa-solid fa-circle-check text-green-500"></i> Hadir' : '<i class="fa-solid fa-circle-xmark text-red-400"></i> Tidak Hadir';
-
-            // Membuat elemen HTML untuk ucapan baru
-            const elemenUcapanBaru = `
-                <div class="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm relative overflow-hidden animate-[pulse_0.5s_ease-in-out]">
-                    <div class="absolute left-0 top-0 w-1 h-full ${warnaGaris}"></div>
-                    <div class="flex items-center gap-3 mb-2">
-                        <div class="w-9 h-9 rounded-full bg-wd-gold/10 text-wd-gold flex items-center justify-center font-serif-premium text-sm font-bold border border-wd-gold/20">${inisial}</div>
-                        <div>
-                            <p class="font-bold text-sm text-wd-dark">${nama}</p>
-                            <p class="text-[10px] text-gray-400 flex items-center gap-1">
-                                ${iconKehadiran} • Baru saja
-                            </p>
-                        </div>
-                    </div>
-                    <p class="text-sm text-gray-600 italic leading-relaxed">"${pesan}"</p>
-                </div>
-            `;
-
-            // Memasukkan ucapan baru ke bagian paling atas daftar
-            const container = document.getElementById('wishesContainer');
-            container.insertAdjacentHTML('afterbegin', elemenUcapanBaru);
-
-            // Mereset isi form
-            document.getElementById('rsvpForm').reset();
-
-            // Efek visual pada tombol bahwa pesan berhasil dikirim
             const btnSubmit = document.getElementById('btnSubmitForm');
             const teksAwal = btnSubmit.innerHTML;
-            
-            btnSubmit.innerHTML = '<i class="fa-solid fa-check"></i> <span>Terkirim!</span>';
-            btnSubmit.classList.replace('bg-wd-dark', 'bg-green-600');
-            
-            // Mengembalikan tombol ke keadaan semula setelah 3 detik
-            setTimeout(() => {
-                btnSubmit.innerHTML = teksAwal;
-                btnSubmit.classList.replace('bg-green-600', 'bg-wd-dark');
-            }, 3000);
+
+            // Ubah tombol jadi mode loading
+            btnSubmit.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> <span>Mengirim...</span>';
+            btnSubmit.disabled = true;
+            btnSubmit.classList.add('opacity-70', 'cursor-not-allowed');
+
+            // Ambil data dari form
+            const form = document.getElementById('rsvpForm');
+            const formData = new FormData();
+            formData.append('nama', document.getElementById('namaPengirim').value);
+            formData.append('kehadiran', document.getElementById('statusHadir').value);
+            formData.append('ucapan', document.getElementById('pesanUcapan').value);
+
+            // Kirim data ke Google Sheets
+            fetch(scriptURL, { method: 'POST', body: formData })
+                .then(response => {
+                    // Jika sukses
+                    btnSubmit.innerHTML = '<i class="fa-solid fa-check"></i> <span>Terkirim!</span>';
+                    btnSubmit.classList.replace('bg-wd-dark', 'bg-green-600');
+                    form.reset();
+                    
+                    // Panggil ulang data terbaru agar ucapan langsung muncul di layar
+                    loadWishes(); 
+                    
+                    // Kembalikan tombol seperti semula setelah 3 detik
+                    setTimeout(() => {
+                        btnSubmit.innerHTML = teksAwal;
+                        btnSubmit.classList.replace('bg-green-600', 'bg-wd-dark');
+                        btnSubmit.disabled = false;
+                        btnSubmit.classList.remove('opacity-70', 'cursor-not-allowed');
+                    }, 3000);
+                })
+                .catch(error => {
+                    // Jika error/gagal jaringan
+                    console.error('Error!', error.message);
+                    btnSubmit.innerHTML = teksAwal;
+                    btnSubmit.disabled = false;
+                    btnSubmit.classList.remove('opacity-70', 'cursor-not-allowed');
+                    alert("Maaf, koneksi gagal. Silakan coba lagi.");
+                });
+        }
+
+        // Fungsi untuk mengambil dan menampilkan data dari Google Sheets
+        function loadWishes() {
+            const container = document.getElementById('wishesContainer');
+            container.innerHTML = '<div class="text-center py-4 text-gray-400 text-sm"><i class="fa-solid fa-circle-notch fa-spin mr-2"></i> Memuat ucapan...</div>';
+
+            fetch(scriptURL)
+                .then(response => response.json())
+                .then(data => {
+                    container.innerHTML = ''; // Hapus tulisan loading
+                    
+                    if(data.length === 0) {
+                        container.innerHTML = '<div class="text-center py-4 text-gray-400 text-sm italic">Jadilah yang pertama memberikan ucapan!</div>';
+                        return;
+                    }
+                    
+                    // Balik array agar ucapan yang paling baru masuk (paling bawah di excel) muncul di paling atas layar
+                    data.reverse().forEach(item => {
+                        const isHadir = item.kehadiran === 'hadir';
+                        const warnaGaris = isHadir ? 'bg-green-500/80' : 'bg-red-400/80';
+                        const iconKehadiran = isHadir ? '<i class="fa-solid fa-circle-check text-green-500"></i> Hadir' : '<i class="fa-solid fa-circle-xmark text-red-400"></i> Tidak Hadir';
+                        const inisial = item.nama ? item.nama.charAt(0).toUpperCase() : 'G';
+
+                        const elemenUcapan = `
+                            <div class="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm relative overflow-hidden mb-4">
+                                <div class="absolute left-0 top-0 w-1 h-full ${warnaGaris}"></div>
+                                <div class="flex items-center gap-3 mb-2">
+                                    <div class="w-9 h-9 rounded-full bg-[#c4aa7d]/20 text-[#c4aa7d] flex items-center justify-center font-serif-premium text-sm font-bold border border-[#c4aa7d]/30">${inisial}</div>
+                                    <div>
+                                        <p class="font-bold text-sm text-gray-800">${item.nama}</p>
+                                        <p class="text-[10px] text-gray-400 flex items-center gap-1">
+                                            ${iconKehadiran}
+                                        </p>
+                                    </div>
+                                </div>
+                                <p class="text-sm text-gray-600 italic leading-relaxed">"${item.ucapan}"</p>
+                            </div>
+                        `;
+                        container.insertAdjacentHTML('beforeend', elemenUcapan);
+                    });
+                })
+                .catch(error => {
+                    console.error('Error fetching data:', error);
+                    container.innerHTML = '<div class="text-center py-4 text-red-400 text-sm">Gagal memuat daftar ucapan.</div>';
+                });
         }
 
 	// 8. Fungsi Ambil Nama Tamu dari Parameter URL
