@@ -36,8 +36,24 @@
                         'body-premium': ['Lora', 'serif'],
                     },
                     animation: {
-                        'float': 'float 3s ease-in-out infinite',
+                        'float': 'float 4s ease-in-out infinite',
                         'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'sway-slow': 'swayNatural 10s ease-in-out infinite',
+                        'fade-in-loop': 'fadeInLoop 5s ease-in-out infinite',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-10px)' },
+                        },
+                        swayNatural: {
+                            '0%, 100%': { transform: 'rotate(0deg) scale(1)' },
+                            '50%': { transform: 'rotate(1deg) scale(1.02)' },
+                        },
+                        fadeInLoop: {
+                            '0%, 100%': { opacity: '0.3' },
+                            '50%': { opacity: '0.7' },
+                        }
                     }
                 }
             }
@@ -215,9 +231,11 @@
                     <p class="text-xs md:text-sm text-gray-500 mb-2">Yth. Bapak/Ibu/Saudara/i</p>
                     <h3 id="nama-tamu" class="font-serif-premium text-2xl font-semibold border-b border-wd-gold pb-2 inline-block px-4 text-wd-dark">Tamu Undangan</h3>
                 </div>
-                <button onclick="bukaUndangan()" class="inline-flex items-center justify-center px-8 py-3 bg-wd-blue text-white font-serif-premium text-sm tracking-widest uppercase rounded-full shadow-lg hover:scale-105 transition-all duration-300 animate-float">
-                    <i class="fa-solid fa-envelope-open-text mr-2"></i> Buka Undangan
-                </button>
+                <div class="opacity-0" data-aos="fade-up" data-aos-delay="1100" data-aos-duration="1000">
+                    <button onclick="bukaUndangan()" class="inline-flex items-center justify-center px-10 py-3.5 bg-wd-blue text-white font-serif-premium text-sm tracking-widest uppercase rounded-full shadow-xl hover:bg-wd-dark hover:scale-105 transition-all duration-300 animate-float">
+                        <i class="fa-solid fa-envelope-open-text mr-2.5 text-lg"></i> Buka Undangan
+                    </button>
+		</div>
             </div>
         </div>
 
@@ -260,9 +278,9 @@
                     
                     <!-- Judul & Muqaddimah (Tetap Dikunci di Tengah) -->
                     <div class="text-center mb-16 md:mb-20 w-full mx-auto" data-aos="fade-up">
-                        <h2 class="font-script-premium text-5xl md:text-6xl text-wd-gold">Bride & Groom</h2>
+                        <h2 class="font-script-premium text-5xl md:text-6xl text-wd-gold">Bride & Groom</h2><br>
                         <div class="max-w-xl mx-auto text-sm md:text-base text-gray-600 text-center leading-relaxed space-y-3">
-                            Bismillahirrahmanirrahim<br><br>
+                            Bismillahirrahmanirrahim<br>
                             Assalamu'alaikum Warahmatullaahi Wabarakaatuh.<br>
                             Dengan memohon rahmat dan ridha Allah SWT, kami bermaksud menyelenggarakan pernikahan putra-putri kami.
                         </div>
@@ -307,7 +325,7 @@
                         <!-- Teks Detail Ajeng -->
                         <div class="mt-5 relative z-40 w-full">
                             <h3 class="font-serif-premium text-2xl text-[#c4aa7d] mb-2 tracking-wide uppercase"><b>Ajeng Yuni P.</b></h3>
-                            <p class="text-xs md:text-sm text-gray-500 mb-4">Putri pertama dari<br><span class="font-semibold text-gray-600">Bapak Sunaryo & Ibu Tuplik</span></p>
+                            <p class="text-xs md:text-sm text-gray-500 mb-4">Putri pertama dari<br><span class="font-semibold text-gray-600">Bapak Sunaryo dan Ibu Tuplik</span></p>
                             <a href="https://instagram.com/ajengyunipuspitasari" class="inline-flex items-center justify-center gap-2 bg-[#1BA39C] hover:bg-[#03A678] text-white px-5 py-2 rounded-full shadow-sm transition-all duration-300 hover:-translate-y-1 text-[13px] font-reguler tracking-wide">
                                 <i class="fa-brands fa-instagram text-sm"></i> @ajengyunipuspitasari
                             </a>
@@ -353,7 +371,7 @@
                         <!-- Teks Detail Irvan -->
                         <div class="mt-5 relative z-40 w-full">
                             <h3 class="font-serif-premium text-2xl text-[#c4aa7d] mb-2 tracking-wide uppercase"><b>Irvan Efendi</b></h3>
-                            <p class="text-xs md:text-sm text-gray-500 mb-4">Putra ke-lima dari<br><span class="font-semibold text-gray-600">Bapak Surawi & Ibu Hanifah</span></p>
+                            <p class="text-xs md:text-sm text-gray-500 mb-4">Putra ke-lima dari<br><span class="font-semibold text-gray-600">Bapak Surawi dan Ibu Hanifah</span></p>
                             <a href="#" class="inline-flex items-center justify-center gap-2 bg-[#1BA39C] hover:bg-[#03A678] text-white px-5 py-2 rounded-full shadow-sm transition-all duration-300 hover:-translate-y-1 text-[13px] font-reguler tracking-wide">
                                 <i class="fa-brands fa-instagram text-sm"></i> @irvanefendy_
                             </a>
@@ -706,7 +724,7 @@ Kehadiran Bapak/Ibu/Saudara/i merupakan suatu tanda kasih bagi kami. Apabila ing
                         <!-- Daftar Ucapan (Wishes Board) -->
                         <div>
                             <h3 class="font-serif-premium text-lg text-wd-dark mb-5 flex items-center gap-2">
-                                <i class="fa-regular fa-comments text-wd-gold"></i> Harapan & Doa (<span class="text-wd-gold">124</span>)
+                                <i class="fa-regular fa-comments text-wd-gold"></i> Harapan & Doa (<span class="text-wd-gold">12</span>)
                             </h3>
                             
                             <!-- Container Scroll dengan Custom Scrollbar -->
@@ -770,7 +788,8 @@ Kehadiran Bapak/Ibu/Saudara/i merupakan suatu tanda kasih bagi kami. Apabila ing
         </p><br><br>
                     <p class="font-serif-premium tracking-widest text-center uppercase mb-6 text-xs text-wd-gold"><b>Kami yang berbahagia</b></p>
                     <h2 class="font-script-premium text-5xl text-center md:text-6xl text-wd-dark">Irvan & Ajeng</h2><br><br><br>
-		      <p class="text-muted text-center small mb-0 font-montserrat">© 2026 Made with ❤️ by VanzDigital</p>
+		    <p class="text-black-400 text-center text-xs font-medium tracking-wide">© 2026 Made with ❤️ by VanzDigital</p>
+                    <p class="text-black-300 text-center text-[10px] mt-1">Exclusive Digital Invitation</p>
                 </div>
             </section>
 	</div>
